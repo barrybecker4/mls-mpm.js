@@ -1,7 +1,25 @@
 "use strict";
+import {
+    add2D,
+    sca2D,
+    sub2D,
+    had2D,
+    addMat,
+    subMat,
+    add3D,
+    sca3D,
+    determinant,
+    transposed,
+    mulMat,
+    mulMatVec,
+    polar_decomp,
+    outer_product,
+    clamp,
+    svd,
+} from './algebra.js';
 
 const n = 80; // grid resolution (cells)
-const dt = 1e-4; // time step for simulation
+export const dt = 1e-4; // time step for simulation
 const dx = 1.0 / n; // cell width
 const inv_dx = 1.0 / dx; // number of cells as a real number
 
@@ -36,12 +54,12 @@ function Particle(x, c) {
     }
 }
 
-const particles = [];
+export const particles = [];
 const grid = []; // velocity + mass, node_res = cell_res + 1
 
 function gridIndex(i, j, k) { return i + (n+1)*j; }
 
-function advance(dt) {
+export function advance(dt) {
     // Reset grid
     for(let i = 0; i < (n+1)**2; i++) {
         grid[i] = [0,0,0];
@@ -130,7 +148,7 @@ function advance(dt) {
     }
 }
 
-function add_rnd_disc(center, minRadius, maxRadius, c) {
+export function add_rnd_disc(center, minRadius, maxRadius, c) {
   let n = 100000; // maximum number of particles (for a disc without hole)
   let i=0;
   let p, x;
@@ -146,7 +164,7 @@ function add_rnd_disc(center, minRadius, maxRadius, c) {
   }
 }
 
-function add_disc(center, minRadius, maxRadius, c) {
+export function add_disc(center, minRadius, maxRadius, c) {
   const res = 0.005;
   for(let i=-maxRadius;i<maxRadius;i+=res) {
     for(let j=-maxRadius;j<maxRadius;j+=res) {

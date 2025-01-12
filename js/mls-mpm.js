@@ -1,7 +1,25 @@
-"use strict";
+//"use strict";
+import {
+    add2D,
+    sca2D,
+    sub2D,
+    had2D,
+    addMat,
+    subMat,
+    add3D,
+    sca3D,
+    determinant,
+    transposed,
+    mulMat,
+    mulMatVec,
+    polar_decomp,
+    outer_product,
+    clamp,
+    svd,
+} from './algebra.js';
 
 const n = 80; // grid resolution (cells)
-const dt = 1e-4; // time step for simulation
+export const dt = 1e-4; // time step for simulation
 const dx = 1.0 / n; // cell width
 const inv_dx = 1.0 / dx; // number of cells as a real number
 
@@ -26,12 +44,12 @@ function Particle(x, c) {
     }
 }
 
-const particles = [];
+export const particles = [];
 const grid = []; // velocity + mass, node_res = cell_res + 1
 
 function gridIndex(i, j) { return i + (n+1)*j; }
 
-function advance(dt) {
+export function advance(dt) {
     // Reset grid
     for(let i = 0; i < (n+1)*(n+1); i++) {
         grid[i] = [0,0,0];
@@ -77,7 +95,8 @@ function advance(dt) {
 
     // Modify grid velocities to respect boundaries
     const boundary = 0.05;
-    for(let i = 0; i <= n; i++) {
+
+    for ( let i = 0; i <= n; i++) {
         for(let j = 0; j <= n; j++) { // for all grid nodes
             const ii = gridIndex(i, j);
             if (grid[ii][2] > 0) { // no need for epsilon here
@@ -141,7 +160,7 @@ function advance(dt) {
     }
 }
 
-function add_rnd_square(center, c) {
+export function add_rnd_square(center, c) {
     for (let i = 0; i < 1000; i++) {
         // Randomly sample 1000 particles in the square
         particles.push(new Particle(add2D([(Math.random()*2-1)*0.08, (Math.random()*2-1)*0.08], center), c));
