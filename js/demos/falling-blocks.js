@@ -1,5 +1,6 @@
-//"use strict";
+"use strict";
 import { dt, particles, advance, add_rnd_square } from '../mls-mpm.js';
+
 
 export function initFallingBlocks(canvas, size) {
 
@@ -16,6 +17,7 @@ export function initFallingBlocks(canvas, size) {
   let iter = 0;
 
   function display() {
+
       context.fillStyle = '#000000';
       context.fillRect(0, 0, size, size);
 
