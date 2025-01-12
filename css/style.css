@@ -1,0 +1,49 @@
+body {
+    background: grey;
+    margin: 0;
+    padding: 0;
+}
+
+.tab-container {
+    position: fixed;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    display: flex;
+    gap: 1px;
+}
+
+.tab-button {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 2px 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
+    min-width: 100px;
+    border-radius: 4px 4px 0 0;
+}
+
+.tab-button.active {
+    background: #555;
+}
+
+.tab-button:hover {
+    background: #444;
+}
+
+canvas {
+    width: var(--canvas-size);
+    height: var(--canvas-size);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+canvas.active {
+    display: block;
+}
