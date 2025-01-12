@@ -7,6 +7,7 @@ function add3D(a, b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]}
 function sca3D(a, t) {return [a[0]*t, a[1]*t, a[2]*t]}
 function determinant(a) {return a[0]*a[3]-a[1]*a[2]}
 function transposed(a) {return [a[0], a[2], a[1], a[3]]}
+
 function mulMat(a, b) {
     return [
         a[0]*b[0]+a[1]*b[2],
@@ -15,21 +16,26 @@ function mulMat(a, b) {
         a[2]*b[1]+a[3]*b[3]
     ];
 }
+
 function mulMatVec(a, b) { // transposed, as for taichi's convention
     return [
         a[0]*b[0]+a[2]*b[1],
         a[1]*b[0]+a[3]*b[1]
     ];
 }
+
 function addMat(a, b) {return [a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]]}
 function subMat(a, b) {return [a[0]-b[0],a[1]-b[1],a[2]-b[2],a[3]-b[3]]}
+
 function outer_product(a, b) { // transposed, as for taichi's convention
     return [
         a[0]*b[0],a[1]*b[0],
         a[0]*b[1],a[1]*b[1]
     ]
 }
+
 function clamp(x, min, max) {return Math.min(Math.max(x,min),max)}
+
 function polar_decomp(m) { // transposed as in taichi
     const x = m[0] + m[3];
     const y = m[2] - m[1];
@@ -45,6 +51,7 @@ function polar_decomp(m) { // transposed as in taichi
 
     return {R, S};
 }
+
 function svd(m) { // transposed as in taichi
     let {R:U, S:S} = polar_decomp(m);
     let c, s;
