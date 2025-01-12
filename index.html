@@ -1,22 +1,118 @@
 <html>
-    <head>
-        <style>
-            body {
-                background: grey;
-            }
+<head>
+    <style>
+        body {
+            background: grey;
+            margin: 0;
+            padding: 0;
+        }
 
-            canvas {
-                width: var(--canvas-size);
-                width: var(--canvas-size);
-                position:absolute;
-                top:50%;
-                left:50%;
-                transform:translate(-50%, -50%);
-            }
-        </style>
-    </head>
-    <body>
-        <canvas id="canvas"></canvas>
-        <script type="module" src="js/demos/falling-blocks.js"></script>
-    </body>
+        .tab-container {
+            position: fixed;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            display: flex;  /* Make buttons horizontal */
+            gap: 1px;      /* Small gap between buttons */
+        }
+
+        .tab-button {
+            background: #333;
+            border: none;
+            color: white;
+            padding: 2px 10px;    /* Reduced padding */
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;      /* Smaller font */
+            min-width: 100px;     /* Consistent width */
+            border-radius: 4px 4px 0 0;  /* Rounded top corners */
+        }
+
+        .tab-button.active {
+            background: #555;
+        }
+
+        .tab-button:hover {
+            background: #444;
+        }
+
+        canvas {
+            width: var(--canvas-size);
+            height: var(--canvas-size);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        canvas.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="tab-container">
+    <button class="tab-button active" data-demo="falling-blocks">Falling Blocks</button>
+    <button class="tab-button" data-demo="folding-ball">Folding Ball</button>
+</div>
+
+<canvas id="falling-blocks-canvas" class="active"></canvas>
+<canvas id="folding-ball-canvas"></canvas>
+
+<script type="module">
+    import { initFallingBlocks } from './js/demos/falling-blocks.js';
+    import { initFoldingBall } from './js/demos/folding-ball.js';
+
+    const CANVAS_SIZE = 900;
+    const demos = {
+        'falling-blocks': {
+            canvas: document.getElementById('falling-blocks-canvas'),
+            init: initFallingBlocks,
+            active: false
+        },
+        'folding-ball': {
+            canvas: document.getElementById('folding-ball-canvas'),
+            init: initFoldingBall,
+            active: false
+        }
+    };
+
+    // Initialize the first demo
+    const firstDemo = demos['falling-blocks'];
+    firstDemo.instance = firstDemo.init(demos['falling-blocks'].canvas, CANVAS_SIZE);
+    firstDemo.active = true;
+
+    // Handle tab switching
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const demoId = button.dataset.demo;
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.toggle('active', btn === button);
+            });
+
+            Object.entries(demos).forEach(([id, demo]) => {
+                const isActive = id === demoId;
+                demo.canvas.classList.toggle('active', isActive);
+
+                if (isActive) {
+                    if (!demo.instance) {
+                        // Initialize if first time
+                        demo.instance = demo.init(demo.canvas, CANVAS_SIZE);
+                    } else {
+                        // Resume if already initialized
+                        demo.instance.resume();
+                    }
+                } else if (demo.instance) {
+                    // Pause if not active
+                    demo.instance.pause();
+                }
+                demo.active = isActive;
+            });
+        });
+    });
+</script>
+</body>
 </html>
