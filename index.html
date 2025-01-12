@@ -6,8 +6,8 @@
             }
 
             canvas {
-                width:600px;
-                width:600px;
+                width: var(--canvas-size);
+                width: var(--canvas-size);
                 position:absolute;
                 top:50%;
                 left:50%;
@@ -16,29 +16,36 @@
         </style>
     </head>
     <body>
-        <canvas id="canvas" width="600" height="600"></canvas>
+        <canvas id="canvas"></canvas>
         <script src="js/algebra.js"></script>
         <script src="js/mls-mpm.js"></script>
         <script>
             "use strict";
 
+            const CANVAS_SIZE = 600;
+            const MARGIN = 48;
             const renderEvery = 5;
             const enableTiming = false;
+
+            document.documentElement.style.setProperty('--canvas-size', `${CANVAS_SIZE}px`);
             const canvas = document.getElementById('canvas');
+            canvas.width = CANVAS_SIZE;
+            canvas.height = CANVAS_SIZE;
+
             const context = canvas.getContext('2d', { alpha: false });
             let iter = 0;
 
             function display() {
                 context.fillStyle = '#000000';
-                context.fillRect(0, 0, 600, 600);
+                context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
                 context.lineWidth = 0.5;
                 context.strokeStyle = '#CCCCCC';
-                context.strokeRect(24, 24, 552, 552);
+                context.strokeRect(24, 24, CANVAS_SIZE - MARGIN, CANVAS_SIZE - MARGIN);
 
                 for(let p of particles) {
                     context.fillStyle = `#${p.c.toString(16)}`;
-                    context.fillRect(600*p.x[0]-1, 600-600*p.x[1]-1, 2, 2);
+                    context.fillRect(CANVAS_SIZE * p.x[0] - 1, CANVAS_SIZE - CANVAS_SIZE * p.x[1] - 1, 2, 2);
                 }
             }
 
