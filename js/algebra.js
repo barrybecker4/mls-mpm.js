@@ -1,5 +1,3 @@
-"use strict";
-
 export function add2D(a, b) {return [a[0] + b[0], a[1] + b[1]]}
 export function sca2D(a, t) {return [a[0] * t, a[1] * t]}
 export function sub2D(a, b) {return [a[0] - b[0], a[1]-b[1]]}

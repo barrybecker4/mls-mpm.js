@@ -1,4 +1,3 @@
-"use strict";
 import {
     add2D,
     sca2D,
