@@ -116,7 +116,7 @@ export function advance(dt) {
     }
 
     // 2. Grid to particle
-    for (let ind = 0; ind<particles.length; ind ++) {
+    for (let ind = 0; ind < particles.length; ind ++) {
         const p = particles[ind];
         const base_coord=sub2D(p.x.map(o=>o*inv_dx),[0.5,0.5]).map(o=>parseInt(o));// element-wise floor
         const fx = sub2D(sca2D(p.x, inv_dx), base_coord); // base position in grid units

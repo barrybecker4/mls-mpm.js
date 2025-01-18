@@ -8,24 +8,26 @@ export function transposed(a) {return [a[0], a[2], a[1], a[3]]}
 
 export function mulMat(a, b) {
     return [
-        a[0]*b[0]+a[1]*b[2],
-        a[0]*b[1]+a[1]*b[3],
-        a[2]*b[0]+a[3]*b[2],
-        a[2]*b[1]+a[3]*b[3]
+        a[0] * b[0] + a[1] * b[2],
+        a[0] * b[1] + a[1] * b[3],
+        a[2] * b[0] + a[3] * b[2],
+        a[2] * b[1] + a[3] * b[3]
     ];
 }
 
-export function mulMatVec(a, b) { // transposed, as for taichi's convention
+// transposed, as for taichi's convention
+export function mulMatVec(a, b) {
     return [
-        a[0]*b[0]+a[2]*b[1],
-        a[1]*b[0]+a[3]*b[1]
+        a[0] * b[0] + a[2] * b[1],
+        a[1] * b[0] + a[3] * b[1]
     ];
 }
 
 export function addMat(a, b) {return [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]]}
 export function subMat(a, b) {return [a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]]}
 
-export function outer_product(a, b) { // transposed, as for taichi's convention
+// transposed, as for taichi's convention
+export function outer_product(a, b) {
     return [
         a[0] * b[0], a[1] * b[0],
         a[0] * b[1], a[1] * b[1]
@@ -34,7 +36,8 @@ export function outer_product(a, b) { // transposed, as for taichi's convention
 
 export function clamp(x, min, max) {return Math.min(Math.max(x,min),max)}
 
-export function polar_decomp(m) { // transposed as in taichi
+// transposed as in taichi
+export function polar_decomp(m) {
     const x = m[0] + m[3];
     const y = m[2] - m[1];
     const scale = 1.0 / Math.sqrt(x * x + y * y);
@@ -50,7 +53,8 @@ export function polar_decomp(m) { // transposed as in taichi
     return {R, S};
 }
 
-export function svd(m) { // transposed as in taichi
+// transposed as in taichi
+export function svd(m) {
     let {R:U, S:S} = polar_decomp(m);
     let c, s;
     let sig;
@@ -90,8 +94,8 @@ export function svd(m) { // transposed as in taichi
 }
 
 /**
- * @description Hadamard product of vectors
+ * @return Hadamard product of vectors
  */
 export function had2D(a,b) {
-    return [a[0]*b[0],a[1]*b[1]];
+    return [ a[0] * b[0], a[1] * b[1] ];
 }
