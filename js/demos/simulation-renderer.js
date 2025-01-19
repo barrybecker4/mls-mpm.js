@@ -7,7 +7,7 @@ const PARTICLE_SIZE = 2;
 const BORDER_WIDTH = 1;
 
 
-export function createSimulation(initializeSimulation, advanceSimulation, particles) {
+export function createSimulationRenderer(initializeSimulation, advanceSimulation, particles) {
 
     return function init(canvas, size) {
         let isRunning = true;
