@@ -17,69 +17,20 @@ export class SnowSimulation extends MpmSimulation {
         this.plastic = 1;
     }
 
+    // Snow-like hardening
+    // return { lambda, mu )
+    getMaterialProperties(particle) {
+        const e = Math.exp(this.hardening * (1.0 - particle.Jp));
+        if (e <= 0) throw new Error("e = " + e);
+        const mu = this.mu_0 * e;
+        const lambda = this.lambda_0 * e;
+        return { lambda, mu };
+    }
+
     advanceSimulation() {
         this.resetGrid();
 
-        // P2G
-        for (const p of this.particles) {
-            const base_coord = vec2.sub(vec2.scale(p.x, this.inv_dx), [0.5, 0.5])
-                .map(o => parseInt(o));
-            const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
-            const w = utils.createKernel(fx);
-
-            // Snow-like hardening
-            const e = Math.exp(this.hardening * (1.0 - p.Jp));
-            if (e <= 0) throw new Error("e = " + e);
-            const mu = this.mu_0 * e;
-            const lambda = this.lambda_0 * e;
-
-            // Stress computation
-            const J = mat2.determinant(p.F);
-            const { R: r } = decomp.polar(p.F);
-            const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
-            const k2 = lambda * (J - 1) * J;
-
-            const stress = mat2.add(
-                mat2.mul(mat2.sub(mat2.transpose(p.F), r), p.F)
-                    .map(o => o * 2 * mu),
-                [k2, 0, 0, k2]
-            ).map(o => o * k1);
-
-            const affine = mat2.add(stress, p.C.map(o => o * this.particle_mass));
-
-            // Transfer to grid
-            this.transferToGrid(p, affine, this.particle_mass, base_coord, fx, w);
-        }
-
-        // P2G
-        for (const p of this.particles) {
-            const base_coord = vec2.sub(vec2.scale(p.x, this.inv_dx), [0.5, 0.5])
-                .map(o => parseInt(o));
-            const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
-            const w = utils.createKernel(fx);
-
-            // Get material properties
-            const { mu, lambda } = { mu: this.mu_0, lambda: this.lambda_0 }; //this.materialConstants[p.c];
-
-            // Stress computation
-            const J = mat2.determinant(p.F);
-            const { R: r } = decomp.polar(p.F);
-            const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
-            const k2 = lambda * (J - 1) * J;
-
-            const stress = mat2.add(
-                mat2.mul(mat2.sub(mat2.transpose(p.F), r), p.F)
-                    .map(o => o * 2 * mu),
-                [k2, 0, 0, k2]
-            ).map(o => o * k1);
-
-            const affine = mat2.add(stress, p.C.map(o => o * this.particle_mass));
-
-            // Transfer to grid
-            this.transferToGrid(p, affine, this.particle_mass, base_coord, fx, w);
-        }
-
-        // Update grid velocities
+        this.p2g();
         this.updateGridVelocities(-200);
 
         // G2P

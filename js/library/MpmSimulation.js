@@ -1,4 +1,4 @@
-import { vec2, vec3, mat2 } from './algebra.js';
+import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
 
 export class MpmSimulation {
 
@@ -16,6 +16,38 @@ export class MpmSimulation {
     // Advance simulation - must be implemented by subclasses
     advanceSimulation() {
         throw new Error('advanceSimulation must be implemented by subclass');
+    }
+
+    getMaterialProperties(particle) {
+        throw new Error('getMaterialProperties must be implemented by subclass');
+    }
+
+    p2g() {
+        for (const p of this.particles) {
+            const base_coord = vec2.sub(vec2.scale(p.x, this.inv_dx), [0.5, 0.5])
+                .map(o => parseInt(o));
+            const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
+            const w = utils.createKernel(fx);
+
+            const { mu, lambda } = this.getMaterialProperties(p);
+
+            // Stress computation
+            const J = mat2.determinant(p.F);
+            const { R: r } = decomp.polar(p.F);
+            const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
+            const k2 = lambda * (J - 1) * J;
+
+            const stress = mat2.add(
+                mat2.mul(mat2.sub(mat2.transpose(p.F), r), p.F)
+                    .map(o => o * 2 * mu),
+                [k2, 0, 0, k2]
+            ).map(o => o * k1);
+
+            const affine = mat2.add(stress, p.C.map(o => o * this.particle_mass));
+
+            // Transfer to grid
+            this.transferToGrid(p, affine, this.particle_mass, base_coord, fx, w);
+        }
     }
 
     // Utility methods shared by all simulations
@@ -45,6 +77,7 @@ export class MpmSimulation {
         }
     }
 
+    // Update grid velocities (no gravity for folding)
     updateGridVelocities(gravity = -200) {
         for (let i = 0; i <= this.n; i++) {
             for (let j = 0; j <= this.n; j++) {
