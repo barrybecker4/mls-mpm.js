@@ -1,11 +1,4 @@
-import {
-    add2D, sca2D, sub2D,had2D,
-    addMat,subMat,
-    add3D, sca3D,
-    determinant, transposed,
-    mulMat, mulMatVec,
-    polar_decomp, outer_product, clamp, svd, createKernal,
-} from './algebra.js';
+import { vec2, vec3, mat2, decomp, utils } from './algebra.js';
 import { Particle } from './Particle.js';
 
 const n = 90; // grid resolution (cells)
@@ -34,10 +27,10 @@ export function advance(dt) {
 
     // 1. Particles to grid
     for (let p of particles) {
-        const base_coord = sub2D(sca2D(p.x, inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
-        const fx = sub2D(sca2D(p.x, inv_dx), base_coord); // base position in grid units
+        const base_coord = vec2.sub(vec2.scale(p.x, inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
+        const fx = vec2.sub(vec2.scale(p.x, inv_dx), base_coord); // base position in grid units
         // Quadratic kernels  [http://mpm.graphics   Eqn. 123, with x=fx, fx-1, fx-2]
-        const w = createKernal(fx);
+        const w = utils.createKernel(fx);
 
         // Snow-like hardening
         const e = Math.exp(hardening * (1.0 - p.Jp));
@@ -48,17 +41,17 @@ export function advance(dt) {
         // Cauchy stress times dt and inv_dx
         // original taichi: stress = -4 * inv_dx * inv_dx * dt * vol * ( 2 * mu * (p.F - r) * transposed(p.F) + lambda * (J-1) * J )
         // (in taichi matrices are coded transposed)
-        const J = determinant(p.F); // Current volume
-        const { R:r, S:s } = polar_decomp(p.F); // Polar decomp. for fixed corotated model
+        const J = mat2.determinant(p.F); // Current volume
+        const { R:r, S:s } = decomp.polar(p.F); // Polar decomp. for fixed corotated model
         const k1 = -4 * inv_dx * inv_dx * dt * vol;
         const k2 = lambda * (J - 1) * J;
 
-        const stress = addMat(
-            mulMat(subMat(transposed(p.F), r), p.F).map(o=> o * 2 * mu),
+        const stress = mat2.add(
+            mat2.mul(mat2.sub(mat2.transpose(p.F), r), p.F).map(o=> o * 2 * mu),
             [k2, 0, 0, k2]
         ).map(o => o * k1);
 
-        const affine = addMat(stress, p.C.map(o=> o * particle_mass));
+        const affine = mat2.add(stress, p.C.map(o=> o * particle_mass));
 
         const mv = [p.v[0] * particle_mass, p.v[1] * particle_mass, particle_mass]; // translational momentum
         for (let i = 0; i < 3; i++) {
@@ -66,7 +59,7 @@ export function advance(dt) {
                 const dpos = [(i - fx[0]) * dx, (j - fx[1]) * dx];
                 const ii = gridIndex(base_coord[0] + i, base_coord[1] + j);
                 const weight = w[i][0] * w[j][1];
-                grid[ii] = add3D(grid[ii], sca3D(add3D(mv, [...mulMatVec(affine, dpos), 0]), weight));
+                grid[ii] = vec3.add(grid[ii], vec3.scale(vec3.add(mv, [...mat2.mulVec(affine, dpos), 0]), weight));
             }
         }
     }
@@ -79,7 +72,7 @@ export function advance(dt) {
             const ii = gridIndex(i, j);
             if (grid[ii][2] > 0) { // no need for epsilon here
                 grid[ii] = grid[ii].map(o => o / grid[ii][2]); // normalize by mass
-                grid[ii] = add3D(grid[ii], [0, -200 * dt, 0]); // add gravity
+                grid[ii] = vec3.add(grid[ii], [0, -200 * dt, 0]); // add gravity
                 const x = i / n;
                 const y = j / n; // boundary thickness, node coord
 
@@ -98,40 +91,39 @@ export function advance(dt) {
 
     // 2. Grid to particle
     for (let p of particles) {
-        const base_coord = sub2D(p.x.map(o => o * inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
-        const fx = sub2D(sca2D(p.x, inv_dx), base_coord); // base position in grid units
-        const w = createKernal(fx);
+        const base_coord = vec2.sub(p.x.map(o => o * inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
+        const fx = vec2.sub(vec2.scale(p.x, inv_dx), base_coord); // base position in grid units
+        const w = utils.createKernel(fx);
 
         p.C = [0, 0,  0, 0];
         p.v = [0, 0];
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                const dpos = sub2D([i, j], fx);
+                const dpos = vec2.sub([i, j], fx);
                 const ii = gridIndex(base_coord[0] + i, base_coord[1] + j);
                 const weight = w[i][0] * w[j][1];
-                p.v = add2D(p.v, sca2D(grid[ii], weight)); // velocity
+                p.v = vec2.add(p.v, vec2.scale(grid[ii], weight)); // velocity
                 // APIC (affine particle-in-cell); p.C is the affine momentum
-                p.C = addMat(p.C, outer_product(sca2D(grid[ii], weight), dpos).map(o => o * 4 * inv_dx));
+                p.C = mat2.add(p.C, mat2.outer(vec2.scale(grid[ii], weight), dpos).map(o => o * 4 * inv_dx));
             }
         }
 
         // advection
-        p.x = add2D(p.x, sca2D(p.v, dt));
+        p.x = vec2.add(p.x, vec2.scale(p.v, dt));
 
         // MLS-MPM F-update
         // original taichi: F = (Mat(1) + dt * p.C) * p.F
-        let F = mulMat(p.F, addMat([1, 0,  0, 1], p.C.map(o => o * dt)));
-        //let F = mulMat(addMat([1, 0,  0, 1], p.C.map(o => o * dt)), p.F);
+        let F = mat2.mul(p.F, mat2.add([1, 0,  0, 1], p.C.map(o => o * dt)));
 
         // Snow-like plasticity
-        let {U:svd_u, sig:sig, V:svd_v} = svd(F);
+        let { U:svd_u, sig:sig, V:svd_v } = decomp.svd(F);
         for (let i = 0; i < 2 * plastic; i++) {
-            sig[i + 2 * i] = clamp(sig[i + 2 * i], 1.0 - 2.5e-2, 1.0 + 7.5e-3);
+            sig[i + 2 * i] = utils.clamp(sig[i + 2 * i], 1.0 - 2.5e-2, 1.0 + 7.5e-3);
         }
-        const oldJ = determinant(F);
+        const oldJ = mat2.determinant(F);
         // original taichi: F = svd_u * sig * transposed(svd_v)
-        F = mulMat(mulMat(svd_u, sig), transposed(svd_v));
-        const Jp_new = clamp(p.Jp * oldJ / determinant(F), 0.6, 20.0);
+        F = mat2.mul(mat2.mul(svd_u, sig), mat2.transpose(svd_v));
+        const Jp_new = utils.clamp(p.Jp * oldJ / mat2.determinant(F), 0.6, 20.0);
         p.Jp = Jp_new;
         p.F = F;
     }
@@ -141,7 +133,7 @@ export function advance(dt) {
 export function add_rnd_square(center, color) {
     for (let i = 0; i < 1000; i++) {
         const offset = [(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08];
-        const position = add2D(center, offset);
+        const position = vec2.add(center, offset);
         particles.push(new Particle(position, color));
     }
 }
