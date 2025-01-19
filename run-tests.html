@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Matrix Operations Tests</title>
+        <style>
+            body {
+                font-family: monospace;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            #output {
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+                white-space: pre;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Matrix Operations Tests</h1>
+        <div id="output"></div>
+
+        <script>
+            // Redirect console output to the div
+            const output = document.getElementById('output');
+            const originalConsole = {
+                log: console.log,
+                error: console.error
+            };
+
+            console.log = function() {
+                output.innerHTML += Array.from(arguments);
+                originalConsole.log.apply(console, arguments);
+            };
+
+            console.error = function() {
+                output.innerHTML += '<span style="color: red">' +
+                    Array.from(arguments).join(' ') + '</span>\n';
+                originalConsole.error.apply(console, arguments);
+            };
+        </script>
+
+        <script type="module" src="js/test/algebra-tests.js"></script>
+        <script type="module" src="js/test/mls-mpm-tests.js"></script>
+    </body>
+</html>

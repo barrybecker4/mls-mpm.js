@@ -17,7 +17,7 @@ import {
     svd,
 } from './algebra.js';
 
-const n = 80; // grid resolution (cells)
+const n = 90; // grid resolution (cells)
 export const dt = 1e-4; // time step for simulation
 const dx = 1.0 / n; // cell width
 const inv_dx = 1.0 / dx; // number of cells as a real number
@@ -66,10 +66,10 @@ export function advance(dt) {
         const lambda=lambda_0 * e;
 
         // Cauchy stress times dt and inv_dx
-        // original taichi: stress = -4*inv_dx*inv_dx*dt*vol*( 2*mu*(p.F-r)*transposed(p.F) + lambda*(J-1)*J )
+        // original taichi: stress = -4 * inv_dx * inv_dx * dt * vol * ( 2 * mu * (p.F - r) * transposed(p.F) + lambda * (J-1) * J )
         // (in taichi matrices are coded transposed)
         const J = determinant(p.F); // Current volume
-        const {R:r, S:s} = polar_decomp(p.F); // Polar decomp. for fixed corotated model
+        const { R:r, S:s } = polar_decomp(p.F); // Polar decomp. for fixed corotated model
         const k1 = -4 * inv_dx * inv_dx * dt * vol;
         const k2 = lambda * (J-1) * J;
         const stress = addMat( mulMat(subMat(transposed(p.F), r), p.F).map(o=> o * 2 * mu), [k2, 0, 0, k2] ).map(o => o * k1);
@@ -157,13 +157,12 @@ export function add_rnd_square(center, c) {
     }
 }
 
-
-function gridIndex(i, j) { return i + (n + 1) * j; }
-
-function createKernal(fx) {
+export function createKernal(fx) {
     return [
         had2D([0.5, 0.5], sub2D([1.5, 1.5], fx).map(o => o * o)),
         sub2D([0.75, 0.75], sub2D(fx, [1.0, 1.0]).map(o => o * o)),
         had2D([0.5, 0.5], sub2D(fx, [0.5, 0.5]).map(o => o * o))
     ];
 }
+
+function gridIndex(i, j) { return i + (n + 1) * j; }
