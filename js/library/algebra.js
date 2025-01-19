@@ -88,3 +88,11 @@ export function svd(m) {
 export function had2D(a,b) {
     return [ a[0] * b[0], a[1] * b[1] ];
 }
+
+export function createKernal(fx) {
+    return [
+        had2D([0.5, 0.5], sub2D([1.5, 1.5], fx).map(o => o * o)),
+        sub2D([0.75, 0.75], sub2D(fx, [1.0, 1.0]).map(o => o * o)),
+        had2D([0.5, 0.5], sub2D(fx, [0.5, 0.5]).map(o => o * o))
+    ];
+}

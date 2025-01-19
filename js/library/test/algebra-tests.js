@@ -1,18 +1,9 @@
 import { runTest, expect, expectArray } from './test-util.js';
 import {
-    add2D,
-    sca2D,
-    sub2D,
-    had2D,
-    addMat,
-    subMat,
-    mulMat,
-    mulMatVec,
-    transposed,
-    determinant,
-    polar_decomp,
-    outer_product,
-    svd
+    add2D, sca2D, sub2D, had2D,
+    addMat, subMat, mulMat, mulMatVec,
+    transposed, determinant,
+    polar_decomp, outer_product, svd, createKernal,
 } from '../algebra.js';
 
 
@@ -140,9 +131,32 @@ function testMatrixConvention() {
     console.log(`\nMatrix Convention Tests: ${passed}/${total} tests passed\n`);
 }
 
+
+function testKernelFunctions() {
+    let passed = 0;
+    let total = 0;
+
+    total++;
+    passed += runTest('Kernel weights sum', () => {
+        const fx = [0.5, 0.5];
+        const weights = createKernal(fx);
+
+        // Sum of weights in each dimension should be close to 1
+        let sumX = 0, sumY = 0;
+        for (let i = 0; i < 3; i++) {
+            sumX += weights[i][0];
+            sumY += weights[i][1];
+        }
+        expectArray([sumX, sumY]).toBeCloseTo2D([1, 1], 5);
+    });
+
+    console.log(`\nKernel Functions: ${passed}/${total} tests passed\n`);
+}
+
 // Run all tests
 console.log('Starting Matrix Operation Tests...\n');
 testBasicOperations();
 testMatrixOperations();
 testAdvancedOperations();
 testMatrixConvention();
+testKernelFunctions();

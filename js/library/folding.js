@@ -4,8 +4,9 @@ import {
     add3D, sca3D,
     determinant,transposed,
     mulMat,mulMatVec,
-    polar_decomp, outer_product, clamp, svd,
+    polar_decomp, outer_product, clamp, svd, createKernal,
 } from './algebra.js';
+import { Particle } from './Particle.js';
 
 const n = 80; // grid resolution (cells)
 export const dt = 1e-4; // time step for simulation
@@ -32,17 +33,6 @@ for (let c in CC) {
     CC[c].lambda = E * nu / ((1+nu) * (1 - 2 * nu)); // Lamé's 1st parameter \lambda=K-(2/3)\mu, where K is the Bulk modulus
 }
 
-function Particle(x, c) {
-    return {
-        x: x, // position
-        v: [0,0], // velocity
-        F: [1,0, 0,1], // Deformation tensor
-        C: [0,0, 0,0], // Cauchy tensor
-        Jp: 1, // Jacobian determinant (scalar)
-        c: c // color (int)
-    }
-}
-
 export const particles = [];
 const grid = []; // velocity + mass, node_res = cell_res + 1
 
@@ -56,15 +46,11 @@ export function advance(dt) {
 
     // 1. Particles to grid
     for (let p of particles) {
-        const base_coord=sub2D(sca2D(p.x, inv_dx), [0.5,0.5]).map((o)=>parseInt(o)); // element-wise floor
+        const base_coord=sub2D(sca2D(p.x, inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
         const fx = sub2D(sca2D(p.x, inv_dx), base_coord); // base position in grid units
 
         // Quadratic kernels  [http://mpm.graphics   Eqn. 123, with x=fx, fx-1,fx-2]
-        const w = [
-            had2D([0.5, 0.5], sub2D([1.5, 1.5], fx).map(o=>o*o)),
-            sub2D([0.75, 0.75], sub2D(fx, [1.0, 1.0]).map(o=>o*o)),
-            had2D([0.5, 0.5], sub2D(fx, [0.5, 0.5]).map(o=>o*o))
-        ];
+        const w = createKernal(fx);
 
         // Cauchy stress times dt and inv_dx
         // original taichi: stress = -4*inv_dx*inv_dx*dt*vol*( 2*mu*(p.F-r)*transposed(p.F) + lambda*(J-1)*J )
@@ -153,12 +139,12 @@ export function add_rnd_disc(center, minRadius, maxRadius, c) {
   }
 }
 
-export function add_disc(center, minRadius, maxRadius, c) {
+export function add_disc(center, minRadius, maxRadius, color) {
   const res = 0.005;
-  for(let i=-maxRadius;i<maxRadius;i+=res) {
-    for(let j=-maxRadius;j<maxRadius;j+=res) {
-      if(i**2 + j**2<maxRadius**2 && i**2 + j**2>minRadius**2) {
-        particles.push(new Particle(add2D([i, j], center), c));
+  for (let i = -maxRadius; i < maxRadius; i += res) {
+    for (let j= -maxRadius; j < maxRadius; j += res) {
+      if (i**2 + j**2 < maxRadius**2 && i**2 + j**2 > minRadius**2) {
+        particles.push(new Particle(add2D([i, j], center), color));
       }
     }
   }

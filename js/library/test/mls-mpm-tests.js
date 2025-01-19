@@ -1,10 +1,6 @@
 import { runTest, expect, expectArray } from './test-util.js';
 import {
-    particles,
-    add_rnd_square,
-    advance,
-    dt,
-    createKernal
+    particles, add_rnd_square, advance, dt,
 } from '../mls-mpm.js';
 
 
@@ -104,30 +100,8 @@ function testParticleDeformation() {
     console.log(`\nDeformation Tests: ${passed}/${total} tests passed\n`);
 }
 
-function testKernelFunctions() {
-    let passed = 0;
-    let total = 0;
-
-    total++;
-    passed += runTest('Kernel weights sum', () => {
-        const fx = [0.5, 0.5];
-        const weights = createKernal(fx);
-
-        // Sum of weights in each dimension should be close to 1
-        let sumX = 0, sumY = 0;
-        for (let i = 0; i < 3; i++) {
-            sumX += weights[i][0];
-            sumY += weights[i][1];
-        }
-        expectArray([sumX, sumY]).toBeCloseTo2D([1, 1], 5);
-    });
-
-    console.log(`\nKernel Functions: ${passed}/${total} tests passed\n`);
-}
-
 // Run all tests
 console.log('Starting MLS-MPM Tests...\n');
 testParticleCreation();
 testGridOperations();
 testParticleDeformation();
-testKernelFunctions();

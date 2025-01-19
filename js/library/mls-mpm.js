@@ -4,7 +4,7 @@ import {
     add3D, sca3D,
     determinant, transposed,
     mulMat, mulMatVec,
-    polar_decomp, outer_product, clamp, svd,
+    polar_decomp, outer_product, clamp, svd, createKernal,
 } from './algebra.js';
 import { Particle } from './Particle.js';
 
@@ -36,7 +36,7 @@ export function advance(dt) {
     for (let p of particles) {
         const base_coord = sub2D(sca2D(p.x, inv_dx), [0.5, 0.5]).map(o => parseInt(o)); // element-wise floor
         const fx = sub2D(sca2D(p.x, inv_dx), base_coord); // base position in grid units
-        // Quadratic kernels  [http://mpm.graphics   Eqn. 123, with x=fx, fx-1,fx-2]
+        // Quadratic kernels  [http://mpm.graphics   Eqn. 123, with x=fx, fx-1, fx-2]
         const w = createKernal(fx);
 
         // Snow-like hardening
@@ -137,19 +137,13 @@ export function advance(dt) {
     }
 }
 
-export function add_rnd_square(center, c) {
+// Randomly sample 1000 particles in the square
+export function add_rnd_square(center, color) {
     for (let i = 0; i < 1000; i++) {
-        // Randomly sample 1000 particles in the square
-        particles.push(new Particle(add2D([(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08], center), c));
+        const offset = [(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08];
+        const position = add2D(center, offset);
+        particles.push(new Particle(position, color));
     }
-}
-
-export function createKernal(fx) {
-    return [
-        had2D([0.5, 0.5], sub2D([1.5, 1.5], fx).map(o => o * o)),
-        sub2D([0.75, 0.75], sub2D(fx, [1.0, 1.0]).map(o => o * o)),
-        had2D([0.5, 0.5], sub2D(fx, [0.5, 0.5]).map(o => o * o))
-    ];
 }
 
 function gridIndex(i, j) { return i + (n + 1) * j; }
