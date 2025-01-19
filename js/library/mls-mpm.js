@@ -1,21 +1,12 @@
 import {
-    add2D,
-    sca2D,
-    sub2D,
-    had2D,
-    addMat,
-    subMat,
-    add3D,
-    sca3D,
-    determinant,
-    transposed,
-    mulMat,
-    mulMatVec,
-    polar_decomp,
-    outer_product,
-    clamp,
-    svd,
+    add2D, sca2D, sub2D,had2D,
+    addMat,subMat,
+    add3D, sca3D,
+    determinant, transposed,
+    mulMat, mulMatVec,
+    polar_decomp, outer_product, clamp, svd,
 } from './algebra.js';
+import { Particle } from './Particle.js';
 
 const n = 90; // grid resolution (cells)
 export const dt = 1e-4; // time step for simulation
@@ -31,17 +22,6 @@ const nu = 0.2; // Poisson's ratio
 const mu_0 = E / (2 * (1 + nu)); // Shear modulus (or Dynamic viscosity in fluids)
 const lambda_0 = E * nu / ((1 + nu) * (1 - 2 * nu)); // Lamé's 1st parameter \lambda=K-(2/3)\mu, where K is the Bulk modulus
 const plastic = 1; // whether (1=true) or not (0=false) to simulate plasticity
-
-function Particle(x, c) {
-    return {
-        x: x, // position
-        v: [0,0], // velocity
-        F: [1,0, 0,1], // Deformation tensor
-        C: [0,0, 0,0], // Cauchy tensor
-        Jp: 1, // Jacobian determinant (scalar)
-        c: c // color (int)
-    }
-}
 
 export const particles = [];
 const grid = []; // velocity + mass, node_res = cell_res + 1
@@ -78,7 +58,7 @@ export function advance(dt) {
             [k2, 0, 0, k2]
         ).map(o => o * k1);
 
-        const affine = addMat(stress, p.C.map(o=>o*particle_mass));
+        const affine = addMat(stress, p.C.map(o=> o * particle_mass));
 
         const mv = [p.v[0] * particle_mass, p.v[1] * particle_mass, particle_mass]; // translational momentum
         for (let i = 0; i < 3; i++) {

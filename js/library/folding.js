@@ -1,20 +1,10 @@
 import {
-    add2D,
-    sca2D,
-    sub2D,
-    had2D,
-    addMat,
-    subMat,
-    add3D,
-    sca3D,
-    determinant,
-    transposed,
-    mulMat,
-    mulMatVec,
-    polar_decomp,
-    outer_product,
-    clamp,
-    svd,
+    add2D, sca2D, sub2D, had2D,
+    addMat, subMat,
+    add3D, sca3D,
+    determinant,transposed,
+    mulMat,mulMatVec,
+    polar_decomp, outer_product, clamp, svd,
 } from './algebra.js';
 
 const n = 80; // grid resolution (cells)
