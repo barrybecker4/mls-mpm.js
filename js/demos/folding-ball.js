@@ -1,4 +1,4 @@
-import { dt, particles, advance, add_rnd_disc, add_disc } from '../folding.js';
+import { dt, particles, advance, add_rnd_disc, add_disc } from '../library/folding.js';
 import { createSimulation } from './simulation.js';
 
 function initializeSimulation() {

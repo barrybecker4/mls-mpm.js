@@ -1,4 +1,4 @@
-import { dt, particles, advance, add_rnd_square } from '../mls-mpm.js';
+import { dt, particles, advance, add_rnd_square } from '../library/mls-mpm.js';
 import { createSimulation } from './simulation.js';
 
 function initializeSimulation() {
