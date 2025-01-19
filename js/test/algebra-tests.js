@@ -1,4 +1,4 @@
-import { runTest, expect } from './test-util.js';
+import { runTest, expect, expectArray } from './test-util.js';
 import {
     add2D,
     sca2D,
@@ -110,8 +110,39 @@ function testAdvancedOperations() {
     console.log(`\nAdvanced Operations: ${passed}/${total} tests passed\n`);
 }
 
+function testMatrixConvention() {
+    let passed = 0;
+    let total = 0;
+
+    total++; passed += runTest('Matrix multiplication order', () => {
+        const A = [1,2, 3,4];  // stored as [a11, a12, a21, a22]
+        const B = [5,6, 7,8];
+        const C = mulMat(A, B);
+        expect(C).toEqual([19,22, 43,50]);
+    });
+
+    total++; passed += runTest('Matrix vector multiplication', () => {
+        const A = [1, 2,  3, 4];
+        const v = [5, 6];
+        const w = mulMatVec(A, v);
+        expect(w).toEqual([23, 34]);
+    });
+
+    total++; passed += runTest('Deformation gradient convention', () => {
+        // Create a pure rotation matrix (90 degrees)
+        const F = [0,-1, 1,0];
+        const {R, S} = polar_decomp(F);
+        // R should be the rotation, S should be identity
+        expect(R).toEqual([0, 1,  -1, 0]);
+        expectArray(S).toBeCloseTo2D([1, 0,  0, 1], 5);
+    });
+
+    console.log(`\nMatrix Convention Tests: ${passed}/${total} tests passed\n`);
+}
+
 // Run all tests
 console.log('Starting Matrix Operation Tests...\n');
 testBasicOperations();
 testMatrixOperations();
 testAdvancedOperations();
+testMatrixConvention();
