@@ -29,7 +29,7 @@ const hardening = 10.0; // hardening constant for snow plasticity under compress
 const E = 1e+4; // Young's modulus
 const nu = 0.2; // Poisson's ratio
 const mu_0 = E / (2 * (1 + nu)); // Shear modulus (or Dynamic viscosity in fluids)
-const lambda_0 = E * nu / ((1+nu) * (1 - 2 * nu)); // Lamé's 1st parameter \lambda=K-(2/3)\mu, where K is the Bulk modulus
+const lambda_0 = E * nu / ((1 + nu) * (1 - 2 * nu)); // Lamé's 1st parameter \lambda=K-(2/3)\mu, where K is the Bulk modulus
 const plastic = 1; // whether (1=true) or not (0=false) to simulate plasticity
 
 function Particle(x, c) {
@@ -61,6 +61,7 @@ export function advance(dt) {
 
         // Snow-like hardening
         const e = Math.exp(hardening * (1.0 - p.Jp));
+        if (e <= 0) throw new Error("e = " + e);
         const mu = mu_0 * e;
         const lambda=lambda_0 * e;
 
@@ -138,7 +139,7 @@ export function advance(dt) {
         // Snow-like plasticity
         let {U:svd_u, sig:sig, V:svd_v} = svd(F);
         for (let i = 0; i < 2 * plastic; i++) {
-            sig[i+2*i] = clamp(sig[i+2*i], 1.0 - 2.5e-2, 1.0 + 7.5e-3);
+            sig[i + 2 * i] = clamp(sig[i + 2 * i], 1.0 - 2.5e-2, 1.0 + 7.5e-3);
         }
         const oldJ = determinant(F);
         // original taichi: F = svd_u * sig * transposed(svd_v)
@@ -152,7 +153,7 @@ export function advance(dt) {
 export function add_rnd_square(center, c) {
     for (let i = 0; i < 1000; i++) {
         // Randomly sample 1000 particles in the square
-        particles.push(new Particle(add2D([(Math.random()*2-1)*0.08, (Math.random()*2-1)*0.08], center), c));
+        particles.push(new Particle(add2D([(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08], center), c));
     }
 }
 
