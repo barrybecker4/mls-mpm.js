@@ -54,7 +54,7 @@ export function svd(m) {
     let {R:U, S:S} = polar_decomp(m);
     let c, s;
     let sig;
-    let V = [];
+    let V;
     if (Math.abs(S[1]) < 1e-6) {
         sig = S;
         c = 1;
@@ -74,15 +74,9 @@ export function svd(m) {
         const tmp = sig[0];
         sig[0] = sig[3];
         sig[3] = tmp;
-        V[0] = -s;
-        V[1] = -c;
-        V[2] = c;
-        V[3] = -s;
+        V = [-s, -c, c, -s];
     } else {
-        V[0] = c;
-        V[1] = -s;
-        V[2] = s;
-        V[3] = c;
+        V = [c, -s, s, c];
     }
     V = transposed(V);
     U = mulMat(U, V);
@@ -90,9 +84,7 @@ export function svd(m) {
     return {U, sig, V};
 }
 
-/**
- * @return Hadamard product of vectors
- */
+/** @return Hadamard product of vectors */
 export function had2D(a,b) {
     return [ a[0] * b[0], a[1] * b[1] ];
 }
