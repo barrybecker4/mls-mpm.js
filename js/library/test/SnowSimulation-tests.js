@@ -1,8 +1,7 @@
 import { runTest, expect, expectArray } from './test-util.js';
-import {
-    particles, add_rnd_square, advance, dt,
-} from '../mls-mpm.js';
+import { SnowSimulation } from '../SnowSimulation.js';
 
+const simulation = new SnowSimulation();
 
 function testParticleCreation() {
     let passed = 0;
@@ -10,12 +9,12 @@ function testParticleCreation() {
 
     total++;
     passed += runTest('Particle square creation', () => {
-        const oldLength = particles.length;
-        add_rnd_square([0.5, 0.5], 1);
-        expect(particles.length - oldLength).toEqual(1000);
+        const oldLength = simulation.particles.length;
+        simulation.add_rnd_square([0.5, 0.5], 1);
+        expect(simulation.particles.length - oldLength).toEqual(1000);
 
         // Test that particles are within bounds
-        const lastParticle = particles[particles.length - 1];
+        const lastParticle = simulation.particles[simulation.particles.length - 1];
         expect(lastParticle.c).toEqual(1);
         expect(lastParticle.Jp).toEqual(1);
         expect(lastParticle.F).toEqual([1, 0, 0, 1]);
@@ -36,7 +35,7 @@ function testGridOperations() {
     let total = 0;
 
     // Clear particles and add a single test particle
-    particles.length = 0;
+    simulation.particles.length = 0;
     const testParticle = {
         x: [0.5, 0.5],
         v: [1, 0],
@@ -45,12 +44,12 @@ function testGridOperations() {
         Jp: 1,
         c: 1
     };
-    particles.push(testParticle);
+    simulation.particles.push(testParticle);
 
     total++;
     passed += runTest('Single particle advance', () => {
         const oldPos = [...testParticle.x];
-        advance(dt);
+        simulation.advanceSimulation();
         // Particle should move in x direction due to velocity
         expect(testParticle.x[0] > oldPos[0]).toEqual(true);
         // Should also move down due to gravity
@@ -62,7 +61,7 @@ function testGridOperations() {
         // Move particle near bottom boundary
         testParticle.x = [0.5, 0.01];
         testParticle.v = [0, -1];
-        advance(dt);
+        simulation.advanceSimulation();
         // Velocity should be constrained
         expect(testParticle.v[1] >= 0).toEqual(true);
     });
@@ -74,7 +73,7 @@ function testParticleDeformation() {
     let passed = 0;
     let total = 0;
 
-    particles.length = 0;
+    simulation.particles.length = 0;
     const testParticle = {
         x: [0.5, 0.5],
         v: [0, 0],
@@ -83,12 +82,12 @@ function testParticleDeformation() {
         Jp: 1,
         c: 1
     };
-    particles.push(testParticle);
+    simulation.particles.push(testParticle);
 
     total++;
     passed += runTest('Plasticity handling', () => {
         const oldF = [...testParticle.F];
-        advance(dt);
+        simulation.advanceSimulation();
         // F should change due to plasticity
         expect(testParticle.F).toNotEqual(oldF);
 
