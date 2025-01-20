@@ -10,7 +10,7 @@ function testParticleCreation() {
     total++;
     passed += runTest('Particle square creation', () => {
         const oldLength = simulation.particles.length;
-        simulation.add_rnd_square([0.5, 0.5], 1);
+        simulation.addSnowSquare([0.5, 0.5], 1);
         expect(simulation.particles.length - oldLength).toEqual(1000);
 
         // Test that particles are within bounds

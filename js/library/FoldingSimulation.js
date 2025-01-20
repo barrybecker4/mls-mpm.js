@@ -3,12 +3,8 @@ import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
 
 export class FoldingSimulation extends MpmSimulation {
-    constructor(config = {}) {
-        super({
-            ...config,
-            gridResolution: config.gridResolution || 80
-        });
-
+    constructor() {
+        super();
         // Material constants mapping
         this.materialConstants = {
             0x168587: { // white matter, soft
@@ -27,9 +23,6 @@ export class FoldingSimulation extends MpmSimulation {
             this.materialConstants[color].mu = E / (2 * (1 + nu));
             this.materialConstants[color].lambda = E * nu / ((1 + nu) * (1 - 2 * nu));
         }
-
-        this.particle_mass = 1.0;
-        this.vol = 1.0;
     }
 
     getMaterialProperties(particle) {
@@ -43,7 +36,6 @@ export class FoldingSimulation extends MpmSimulation {
 
     advanceSimulation() {
         this.resetGrid();
-
         this.particlesToGrid();
         this.updateGridVelocities(0);
         this.gridToParticles();

@@ -2,12 +2,15 @@ import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
 
 export class MpmSimulation {
 
-    constructor(config = {}) {
-        this.n = config.gridResolution || 90; // grid resolution
-        this.dt = config.timeStep || 1e-4;    // time step
+    constructor() {
+        this.particle_mass = 1.0;
+        this.vol = 1.0;
+
+        this.n = 90; // grid resolution
+        this.dt = 1e-4;    // time step
         this.dx = 1.0 / this.n;              // cell width
         this.inv_dx = 1.0 / this.dx;         // inverse cell width
-        this.boundary = config.boundary || 0.05;
+        this.boundary = 0.05;
 
         this.particles = [];
         this.grid = [];
@@ -83,13 +86,14 @@ export class MpmSimulation {
 
             // F update
             let F = mat2.mul(p.F, mat2.add([1, 0, 0, 1], p.C.map(o => o * this.dt)));
-            updateDeformationGradient(p, F);
+            this.updateDeformationGradient(p, F);
         }
     }
 
     // Utility methods shared by all simulations
     resetGrid() {
-        for(let i = 0; i < (this.n + 1) * (this.n + 1); i++) {
+        const maxIndex = (this.n + 1) * (this.n + 1);
+        for (let i = 0; i < maxIndex; i++) {
             this.grid[i] = [0, 0, 0];
         }
     }

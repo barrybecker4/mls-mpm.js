@@ -3,12 +3,9 @@ import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
 
 export class SnowSimulation extends MpmSimulation {
-    constructor(config = {}) {
-        super(config);
-
-        // Material constants
-        this.particle_mass = 1.0;
-        this.vol = 1.0;
+    constructor() {
+        super();
+        // Material constants for snow
         this.hardening = 10.0;
         this.E = 1e4;
         this.nu = 0.2;
@@ -34,19 +31,18 @@ export class SnowSimulation extends MpmSimulation {
         }
         const oldJ = mat2.determinant(F);
         F = mat2.mul(mat2.mul(svd_u, sig), mat2.transpose(svd_v));
-        p.Jp = utils.clamp(p.Jp * oldJ / mat2.determinant(F), 0.6, 20.0);
-        p.F = F;
+        particle.Jp = utils.clamp(particle.Jp * oldJ / mat2.determinant(F), 0.6, 20.0);
+        particle.F = F;
     }
 
     advanceSimulation() {
         this.resetGrid();
-
         this.particlesToGrid();
         this.updateGridVelocities(-200);
         this.gridToParticles();
     }
 
-    add_rnd_square(center, color) {
+    addSnowSquare(center, color) {
         for (let i = 0; i < 1000; i++) {
             const offset = [(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08];
             const position = vec2.add(center, offset);

@@ -1,12 +1,19 @@
-import { initFallingBlocks } from './falling-blocks.js';
+import { initWaterDrops } from './water-drops.js';
+import { initSnowBlocks } from './snow-blocks.js';
 import { initFoldingBall } from './folding-ball.js';
 
 const CANVAS_SIZE = 1000;
 const DEMOS = [
     {
-        id: 'falling-blocks',
-        canvas: document.getElementById('falling-blocks-canvas'),
-        init: initFallingBlocks,
+        id: 'water-drops',
+        canvas: document.getElementById('water-drops-canvas'),
+        init: initWaterDrops,
+        active: false
+    },
+    {
+        id: 'snow-blocks',
+        canvas: document.getElementById('snow-blocks-canvas'),
+        init: initSnowBlocks,
         active: false
     },
     {
