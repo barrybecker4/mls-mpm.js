@@ -36,44 +36,17 @@ export class FoldingSimulation extends MpmSimulation {
         return this.materialConstants[particle.c];
     }
 
+    updateDeformationGradient(particle, F) {
+        particle.F = F;
+        particle.Jp = mat2.determinant(F);
+    }
+
     advanceSimulation() {
         this.resetGrid();
 
-        this.p2g();
+        this.particlesToGrid();
         this.updateGridVelocities(0);
-
-        // G2P
-        for (const p of this.particles) {
-            const base_coord = vec2.sub(p.x.map(o => o * this.inv_dx), [0.5, 0.5])
-                .map(o => parseInt(o));
-            const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
-            const w = utils.createKernel(fx);
-
-            p.C = [0, 0, 0, 0];
-            p.v = [0, 0];
-
-            // Gather from grid
-            for (let i = 0; i < 3; i++) {
-                for (let j = 0; j < 3; j++) {
-                    const dpos = vec2.sub([i, j], fx);
-                    const ii = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
-                    const weight = w[i][0] * w[j][1];
-                    p.v = vec2.add(p.v, vec2.scale(this.grid[ii], weight));
-                    p.C = mat2.add(
-                        p.C,
-                        mat2.outer(vec2.scale(this.grid[ii], weight), dpos)
-                            .map(o => o * 4 * this.inv_dx)
-                    );
-                }
-            }
-
-            // Advection
-            p.x = vec2.add(p.x, vec2.scale(p.v, this.dt));
-
-            // F update
-            p.F = mat2.mul(p.F, mat2.add([1, 0, 0, 1], p.C.map(o => o * this.dt)));
-            p.Jp = mat2.determinant(p.F);
-        }
+        this.gridToParticles();
     }
 
     add_disc(center, minRadius, maxRadius, color) {
