@@ -14,8 +14,6 @@ export class WaterSimulation extends MpmSimulation {
         this.gamma = 7.0;               // For nonlinear pressure response
         this.maxJ = 1.3;                // Maximum volume change factor
         this.minJ = 0.7;                // Minimum volume change factor
-        this.iteration = 0;
-
     }
 
     getMaterialProperties(particle) {
@@ -27,11 +25,7 @@ export class WaterSimulation extends MpmSimulation {
 
         // For fluids, lambda should provide the pressure response
         // divide by J to get Kirchhoff stress. negative because pressure resists compression
-
         const lambda = pressure / J;
-        if (this.iteration % 100 === 0) {
-          console.log("lambda: " + lambda + " J: " + J);
-        }
         const mu = this.dynamic_viscosity;
 
         return { lambda, mu };
@@ -58,7 +52,6 @@ export class WaterSimulation extends MpmSimulation {
         // Water typically needs higher gravity for realistic behavior
         this.updateGridVelocities(-200);
         this.gridToParticles();
-        this.iteration++;
     }
 
     // You might want to add methods for creating water drops or streams
