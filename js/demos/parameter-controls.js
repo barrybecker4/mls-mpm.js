@@ -1,10 +1,12 @@
+import { Parameter } from '../library/Parameter.js';
+
 const parameters = [
-    { name: 'density0', min: 500, max: 2000, step: 10, label: 'Density' },
-    { name: 'bulk_modulus', min: 50, max: 500, step: 10, label: 'Bulk Modulus' },
-    { name: 'dynamic_viscosity', min: 0.01, max: 1, step: 0.01, label: 'Viscosity' },
-    { name: 'gamma', min: 1, max: 10, step: 0.1, label: 'Gamma' },
-    { name: 'maxJ', min: 1, max: 2, step: 0.05, label: 'Max Volume Change' },
-    { name: 'minJ', min: 0.1, max: 1, step: 0.05, label: 'Min Volume Change' }
+    new Parameter('density0', 500, 2000, 10, 'Density'),
+    new Parameter( 'bulk_modulus', 50, 500, 10, 'Bulk Modulus' ),
+    new Parameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
+    new Parameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
+    new Parameter( 'maxJ', 1, 2, 0.05, 'Max Volume Change' ),
+    new Parameter( 'minJ', 0.1, 1, 0.05,  'Min Volume Change' ),
 ];
 
 
