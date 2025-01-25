@@ -91,11 +91,35 @@ canvas.active {
     width: auto;
 }
 
+/** slider input styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #2196F3;
+    border-radius: 50%;
+    cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #2196F3;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
 .restart-button {
-    width: 90%;
+    width: 100px;
     padding: 8px;
     margin-bottom: 15px;
-    background: #4CAF50;
+    background: #2196F3; /* #4CAF50;  green */
     color: white;
     border: none;
     border-radius: 4px;
@@ -103,5 +127,5 @@ canvas.active {
 }
 
 .restart-button:hover {
-    background: #45a049;
+    background: #55A9FF;   /* #45a049;  */
 }

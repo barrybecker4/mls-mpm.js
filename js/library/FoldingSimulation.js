@@ -27,11 +27,6 @@ export class FoldingSimulation extends MpmSimulation {
         }
     }
 
-    getParameters() {
-        return [
-        ];
-    }
-
     initialize() {
         this.add_disc([0.5, 0.5], 0.22, 0.24, 0xED553B);
         this.add_disc([0.5, 0.5], 0.1, 0.22, 0x168587);

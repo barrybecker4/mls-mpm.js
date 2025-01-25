@@ -1,4 +1,5 @@
 import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
+import { Parameter } from '../library/Parameter.js';
 
 export class MpmSimulation {
 
@@ -15,6 +16,15 @@ export class MpmSimulation {
 
         this.particles = [];
         this.grid = [];
+    }
+
+    getParameters() {
+        return [
+            new Parameter('particle_mass', 0.1, 10, 0.1, 'Particle Mass'),
+            new Parameter( 'vol', 0.1, 10, 0.1, 'Volume' ),
+            new Parameter( 'gravity', -400.0, 400, 20.0, 'Gravity' ),
+            new Parameter( 'dt', 0.00005, 0.001, 0.00001, 'time step (dt)' ),
+        ];
     }
 
     initialize() {

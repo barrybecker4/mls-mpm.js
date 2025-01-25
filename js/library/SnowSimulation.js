@@ -17,11 +17,11 @@ export class SnowSimulation extends MpmSimulation {
     }
 
     getParameters() {
-        return [
+        return super.getParameters().concat([
             new Parameter('hardening', 1.0, 20.0, 1, 'Hardening'),
             new Parameter( 'nu', 0.1, 0.4, 0.01, 'nu' ),
             new Parameter( 'plastic', 0.1, 10, 0.1, 'Plasticity'),
-        ];
+        ]);
     }
 
     initialize() {

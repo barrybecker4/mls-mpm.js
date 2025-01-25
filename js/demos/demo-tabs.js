@@ -31,6 +31,7 @@ const DEMOS = [
 const firstDemo = DEMOS[0];
 firstDemo.instance = firstDemo.init(DEMOS[0].canvas, CANVAS_SIZE);
 firstDemo.active = true;
+parameterControls.updateControls(firstDemo.instance.simulation);
 
 const tabButtons = document.querySelectorAll('.tab-button')
 

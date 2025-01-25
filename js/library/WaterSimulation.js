@@ -18,14 +18,14 @@ export class WaterSimulation extends MpmSimulation {
     }
 
     getParameters() {
-        return [
+        return super.getParameters().concat([
             new Parameter('density0', 500, 2000, 10, 'Density'),
             new Parameter( 'bulk_modulus', 50, 500, 10, 'Bulk Modulus' ),
             new Parameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
             new Parameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
             new Parameter( 'maxJ', 1, 2, 0.05, 'Max Volume Change' ),
             new Parameter( 'minJ', 0.1, 1, 0.05,  'Min Volume Change' ),
-        ];
+        ]);
     }
 
     initialize() {
