@@ -2,14 +2,20 @@ import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
 
+
+// try adding sliders for different parameters
 export class WaterSimulation extends MpmSimulation {
     constructor() {
         super();
         // Material constants for water
         this.density0 = 1000.0;         // water density
         this.bulk_modulus = 200.0;      // bulk modulus of water (Pa). Resistance to compression
-        this.dynamic_viscosity = 0.2;   // water viscosity
+        this.dynamic_viscosity = 0.1;   // water viscosity
         this.gamma = 7.0;               // For nonlinear pressure response
+        this.maxJ = 1.3;                // Maximum volume change factor
+        this.minJ = 0.7;                // Minimum volume change factor
+        this.iteration = 0;
+
     }
 
     getMaterialProperties(particle) {
@@ -21,7 +27,11 @@ export class WaterSimulation extends MpmSimulation {
 
         // For fluids, lambda should provide the pressure response
         // divide by J to get Kirchhoff stress. negative because pressure resists compression
-        const lambda = pressure; // / J;
+
+        const lambda = pressure / J;
+        if (this.iteration % 100 === 0) {
+          console.log("lambda: " + lambda + " J: " + J);
+        }
         const mu = this.dynamic_viscosity;
 
         return { lambda, mu };
@@ -32,10 +42,10 @@ export class WaterSimulation extends MpmSimulation {
         const J = mat2.determinant(F);
 
         // Tighter bounds on volume change
-        if (J < 0.7 || J > 1.3) {
+        if (J < this.minJ || J > this.maxJ) {
             console.log("J out of bounds: ", J);
         }
-        const newJ = Math.max(0.7, Math.min(J, 1.3));
+        const newJ = Math.max(this.minJ, Math.min(J, this.maxJ));
         //const newJ = Math.max(0.96, Math.min(J, 1.04));
         const scale = Math.sqrt(newJ / J);
         particle.F = [F[0] * scale, F[1] * scale, F[2] * scale, F[3] * scale];
@@ -48,6 +58,7 @@ export class WaterSimulation extends MpmSimulation {
         // Water typically needs higher gravity for realistic behavior
         this.updateGridVelocities(-200);
         this.gridToParticles();
+        this.iteration++;
     }
 
     // You might want to add methods for creating water drops or streams
