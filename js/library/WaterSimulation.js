@@ -17,7 +17,6 @@ export class WaterSimulation extends MpmSimulation {
     }
 
     getMaterialProperties(particle) {
-
         const J = mat2.determinant(particle.F);
 
         // Pressure directly proportional to volume change
@@ -44,14 +43,6 @@ export class WaterSimulation extends MpmSimulation {
         const scale = Math.sqrt(newJ / J);
         particle.F = [F[0] * scale, F[1] * scale, F[2] * scale, F[3] * scale];
         particle.Jp = newJ;
-    }
-
-    advanceSimulation() {
-        this.resetGrid();
-        this.particlesToGrid();
-        // Water typically needs higher gravity for realistic behavior
-        this.updateGridVelocities(-200);
-        this.gridToParticles();
     }
 
     // You might want to add methods for creating water drops or streams

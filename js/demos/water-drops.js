@@ -1,5 +1,6 @@
 import { WaterSimulation } from '../library/WaterSimulation.js';
 import { createSimulationRenderer } from './simulation-renderer.js';
+import { createParameterControls } from './parameter-controls.js';
 
 const simulation = new WaterSimulation();
 
@@ -13,3 +14,4 @@ function advanceSimulation(iter) {
 }
 
 export const initWaterDrops = createSimulationRenderer(initializeSimulation, advanceSimulation, simulation.particles);
+createParameterControls(simulation, 'parameter-controls');

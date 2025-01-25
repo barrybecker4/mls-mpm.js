@@ -34,13 +34,6 @@ export class FoldingSimulation extends MpmSimulation {
         particle.Jp = mat2.determinant(F);
     }
 
-    advanceSimulation() {
-        this.resetGrid();
-        this.particlesToGrid();
-        this.updateGridVelocities(0);
-        this.gridToParticles();
-    }
-
     add_disc(center, minRadius, maxRadius, color) {
         const res = 0.005;
         const maxRadiusSq = maxRadius * maxRadius;

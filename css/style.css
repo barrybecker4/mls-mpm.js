@@ -47,3 +47,46 @@ canvas {
 canvas.active {
     display: block;
 }
+
+.control-panel {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    background: rgba(255, 255, 255, 1.0);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 100;
+}
+
+.parameter-control {
+    margin: 10px 0;
+}
+
+.parameter-control label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.parameter-control input {
+    width: 200px;
+}
+
+.collapse-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 20px;
+}
+
+.controls-collapsed #controls-content {
+    display: none;
+}
+
+.controls-collapsed {
+    padding: 15px;
+    width: auto;
+}

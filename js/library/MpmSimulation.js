@@ -5,11 +5,12 @@ export class MpmSimulation {
     constructor() {
         this.particle_mass = 1.0;
         this.vol = 1.0;
+        this.gravity = -200;
 
-        this.n = 90; // grid resolution
-        this.dt = 1e-4;    // time step
-        this.dx = 1.0 / this.n;              // cell width
-        this.inv_dx = 1.0 / this.dx;         // inverse cell width
+        this.n = 90;                  // grid resolution
+        this.dt = 1e-4;               // time step
+        this.dx = 1.0 / this.n;       // cell width
+        this.inv_dx = 1.0 / this.dx;  // inverse cell width
         this.boundary = 0.05;
 
         this.particles = [];
@@ -17,7 +18,10 @@ export class MpmSimulation {
     }
 
     advanceSimulation() {
-        throw new Error('advanceSimulation must be implemented by subclass');
+        this.resetGrid();
+        this.particlesToGrid();
+        this.updateGridVelocities(this.gravity);
+        this.gridToParticles();
     }
 
     // return { lambda, mu ) for a particle
@@ -31,8 +35,7 @@ export class MpmSimulation {
 
     particlesToGrid() {
         for (const p of this.particles) {
-            const base_coord = vec2.sub(vec2.scale(p.x, this.inv_dx), [0.5, 0.5])
-                .map(o => parseInt(o));
+            const base_coord = this.calcBaseCoord(p);
             const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
             const w = utils.createKernel(fx);
 
@@ -58,8 +61,7 @@ export class MpmSimulation {
 
     gridToParticles() {
         for (const p of this.particles) {
-            const base_coord = vec2.sub(p.x.map(o => o * this.inv_dx), [0.5, 0.5])
-                .map(o => parseInt(o));
+            const base_coord = this.calcBaseCoord(p);
             const fx = vec2.sub(vec2.scale(p.x, this.inv_dx), base_coord);
             const w = utils.createKernel(fx);
 
@@ -90,6 +92,10 @@ export class MpmSimulation {
         }
     }
 
+    calcBaseCoord(p) {
+        return vec2.sub(vec2.scale(p.x, this.inv_dx), [0.5, 0.5]).map(o => parseInt(o));
+    }
+
     // Utility methods shared by all simulations
     resetGrid() {
         const maxIndex = (this.n + 1) * (this.n + 1);
@@ -108,38 +114,42 @@ export class MpmSimulation {
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 const dpos = [(i - fx[0]) * this.dx, (j - fx[1]) * this.dx];
-                const ii = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
+                const idx = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
                 const weight = w[i][0] * w[j][1];
-                this.grid[ii] = vec3.add(
-                    this.grid[ii],
+                this.grid[idx] = vec3.add(
+                    this.grid[idx],
                     vec3.scale(vec3.add(mv, [...mat2.mulVec(stress, dpos), 0]), weight)
                 );
             }
         }
     }
 
-    // Update grid velocities (no gravity for folding)
-    updateGridVelocities(gravity = -200) {
+    // Update grid velocities
+    updateGridVelocities(gravity) {
         for (let i = 0; i <= this.n; i++) {
             for (let j = 0; j <= this.n; j++) {
-                const ii = this.gridIndex(i, j);
-                if (this.grid[ii][2] > 0) {
-                    // Normalize by mass
-                    this.grid[ii] = this.grid[ii].map(o => o / this.grid[ii][2]);
-                    // Add gravity
-                    this.grid[ii] = vec3.add(this.grid[ii], [0, gravity * this.dt, 0]);
+                const idx = this.gridIndex(i, j);
+                this.updateGridVelocity(idx, i, j, gravity);
+            }
+        }
+    }
 
-                    const x = i / this.n;
-                    const y = j / this.n;
+    updateGridVelocity(idx, i, j, gravity) {
+        if (this.grid[idx][2] > 0) {
+            // Normalize by mass
+            this.grid[idx] = this.grid[idx].map(o => o / this.grid[idx][2]);
+            // Add gravity
+            this.grid[idx] = vec3.add(this.grid[idx], [0, gravity * this.dt, 0]);
 
-                    // Apply boundary conditions
-                    if (x < this.boundary || x > 1-this.boundary || y > 1-this.boundary) {
-                        this.grid[ii] = [0, 0, 0];
-                    }
-                    if (y < this.boundary) {
-                        this.grid[ii][1] = Math.max(0.0, this.grid[ii][1]);
-                    }
-                }
+            const x = i / this.n;
+            const y = j / this.n;
+
+            // Apply boundary conditions
+            if (x < this.boundary || x > 1.0 - this.boundary || y > 1.0 - this.boundary) {
+                this.grid[idx] = [0, 0, 0];
+            }
+            if (y < this.boundary) {
+                this.grid[idx][1] = Math.max(0.0, this.grid[idx][1]);
             }
         }
     }

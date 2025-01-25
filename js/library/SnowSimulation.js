@@ -35,13 +35,6 @@ export class SnowSimulation extends MpmSimulation {
         particle.F = F;
     }
 
-    advanceSimulation() {
-        this.resetGrid();
-        this.particlesToGrid();
-        this.updateGridVelocities(-200);
-        this.gridToParticles();
-    }
-
     addSnowSquare(center, color) {
         for (let i = 0; i < 1000; i++) {
             const offset = [(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08];
