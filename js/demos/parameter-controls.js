@@ -1,22 +1,18 @@
-import { Parameter } from '../library/Parameter.js';
 
-const parameters = [
-    new Parameter('density0', 500, 2000, 10, 'Density'),
-    new Parameter( 'bulk_modulus', 50, 500, 10, 'Bulk Modulus' ),
-    new Parameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
-    new Parameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
-    new Parameter( 'maxJ', 1, 2, 0.05, 'Max Volume Change' ),
-    new Parameter( 'minJ', 0.1, 1, 0.05,  'Min Volume Change' ),
-];
+export function createParameterControls(containerId) {
 
+    function updateControls(simulation) {
+       const container = document.getElementById(containerId);
+       const content = document.getElementById('controls-content');
 
-export function createParameterControls(simulation, containerId) {
-    const container = document.getElementById(containerId);
-    const content = document.getElementById('controls-content');
+       addCollapseButton(container);
+       addParameterSliders(container, content, simulation);
+       addRestartButton(container, content, simulation);
+    }
 
-    addCollapseButton(container);
-    addParameterSliders(container, content, simulation);
-    addRestartButton(container, content, simulation);
+    return {
+        updateControls
+    };
 }
 
 function addCollapseButton(container) {
@@ -29,6 +25,7 @@ function addCollapseButton(container) {
 }
 
 function addParameterSliders(container, content, simulation) {
+    const parameters = simulation.getParameters();
     content.innerHTML = parameters.map(param => `
         <div class="parameter-control">
             <label>${param.label}: <span id="${param.name}-value"></span></label>

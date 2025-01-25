@@ -1,6 +1,8 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
+import { Parameter } from '../library/Parameter.js';
+
 
 export class SnowSimulation extends MpmSimulation {
     constructor() {
@@ -14,6 +16,13 @@ export class SnowSimulation extends MpmSimulation {
         this.plastic = 1;
     }
 
+    getParameters() {
+        return [
+            new Parameter('hardening', 1.0, 20.0, 1, 'Hardening'),
+            new Parameter( 'nu', 0.1, 0.4, 0.01, 'nu' ),
+            new Parameter( 'plastic', 0.1, 10, 0.1, 'Plasticity'),
+        ];
+    }
 
     initialize() {
         this.addSnowSquare([0.55,0.45], 0xED553B);

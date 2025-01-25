@@ -1,6 +1,7 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
+import { Parameter } from '../library/Parameter.js';
 
 
 // try adding sliders for different parameters
@@ -16,6 +17,16 @@ export class WaterSimulation extends MpmSimulation {
         this.minJ = 0.7;                // Minimum volume change factor
     }
 
+    getParameters() {
+        return [
+            new Parameter('density0', 500, 2000, 10, 'Density'),
+            new Parameter( 'bulk_modulus', 50, 500, 10, 'Bulk Modulus' ),
+            new Parameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
+            new Parameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
+            new Parameter( 'maxJ', 1, 2, 0.05, 'Max Volume Change' ),
+            new Parameter( 'minJ', 0.1, 1, 0.05,  'Min Volume Change' ),
+        ];
+    }
 
     initialize() {
         this.addWaterDrop([0.40,0.75], 0.12, 0x1188FB);

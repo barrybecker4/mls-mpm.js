@@ -1,6 +1,9 @@
 import { initWaterDrops } from './water-drops.js';
 import { initSnowBlocks } from './snow-blocks.js';
 import { initFoldingBall } from './folding-ball.js';
+import { createParameterControls } from './parameter-controls.js';
+
+const parameterControls = createParameterControls('parameter-controls');
 
 const CANVAS_SIZE = 1000;
 const DEMOS = [
@@ -51,6 +54,7 @@ function tabClicked(button) {
                 // Resume if already initialized
                 demo.instance.resume();
             }
+            parameterControls.updateControls(demo.instance.simulation);
         } else if (demo.instance) {
             demo.instance.pause();
         }

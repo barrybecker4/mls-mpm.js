@@ -1,6 +1,8 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
+import { Parameter } from '../library/Parameter.js';
+
 
 export class FoldingSimulation extends MpmSimulation {
     constructor() {
@@ -23,6 +25,11 @@ export class FoldingSimulation extends MpmSimulation {
             this.materialConstants[color].mu = E / (2 * (1 + nu));
             this.materialConstants[color].lambda = E * nu / ((1 + nu) * (1 - 2 * nu));
         }
+    }
+
+    getParameters() {
+        return [
+        ];
     }
 
     initialize() {

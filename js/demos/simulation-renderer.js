@@ -75,7 +75,8 @@ export function createSimulationRenderer(simulation) {
                     isRunning = true;
                     step();
                 }
-            }
+            },
+            simulation,
         };
     };
 }
