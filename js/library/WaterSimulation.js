@@ -29,19 +29,26 @@ export class WaterSimulation extends MpmSimulation {
     }
 
     initialize() {
-        this.addWaterDrop([0.40,0.75], 0.12, 0x1188FB);
-        this.addWaterDrop([0.55,0.45], 0.10, 0x6611EE);
+        this.addWaterDrop([0.40,0.75], 0.12, 0x51B8FF);
+        this.addWaterDrop([0.55,0.45], 0.10, 0xA681FE);
     }
 
     getMaterialProperties(particle) {
-        const J = mat2.determinant(particle.F);
+        let J = mat2.determinant(particle.F);
+        if (isNaN(J) || J < 0.001) {
+            console.log(`Problem with the determinant J=${J} particle.F=${particle.F} setting it to 1.0`);
+        }
 
         // Pressure directly proportional to volume change
         const pressure = this.bulk_modulus * (26.0 - Math.pow(J, -this.gamma));
+        if (isNaN(pressure)) throw new Error(`pressure=${pressure} J=${J} particle.F=${particle.F} pow=${Math.pow(J, -this.gamma)}`);
 
         // For fluids, lambda should provide the pressure response
         // divide by J to get Kirchhoff stress. negative because pressure resists compression
         const lambda = pressure / J;
+        if (!Number.isFinite(lambda)) {
+            throw new Error(`lambda: ${lambda} pressure: pressure=${pressure} J=${J}`);
+        }
         const mu = this.dynamic_viscosity;
 
         return { lambda, mu };
@@ -49,7 +56,10 @@ export class WaterSimulation extends MpmSimulation {
 
     updateDeformationGradient(particle, F) {
         // For water, mainly track volume changes
-        const J = mat2.determinant(F);
+        let J = mat2.determinant(F);
+        if (isNaN(J) || J < 0.001) {
+            console.log(`J should never be less than 0. J=${J} F=${F} particle.F=${particle.F}`);
+        }
 
         // Tighter bounds on volume change
         if (J < this.minJ || J > this.maxJ) {
@@ -57,7 +67,11 @@ export class WaterSimulation extends MpmSimulation {
         }
         const newJ = Math.max(this.minJ, Math.min(J, this.maxJ));
         //const newJ = Math.max(0.96, Math.min(J, 1.04));
+        if (isNaN(newJ) || isNaN(J) || J == 0) throw new Error(`newJ=${newJ} J=${J} particle.F=${particle.F}`);
         const scale = Math.sqrt(newJ / J);
+        if (isNaN(scale) || scale < 0) throw new Error(`scale=${scale} newJ=${newJ} J=${J}`);
+        //if (F[0] < 0 || F[1] < 0 || F[2] < 0 || F[3] < 0) throw new Error(`F should never be negative. F=${F}`);
+        //particle.F = [Math.max(0.001, F[0]) * scale, Math.max(0.001, F[1]) * scale, Math.max(0.001, F[2]) * scale, Math.max(0.001, F[3]) * scale];
         particle.F = [F[0] * scale, F[1] * scale, F[2] * scale, F[3] * scale];
         particle.Jp = newJ;
     }
