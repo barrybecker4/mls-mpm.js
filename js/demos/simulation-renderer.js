@@ -7,7 +7,7 @@ const PARTICLE_SIZE = 2;
 const BORDER_WIDTH = 1;
 
 
-export function createSimulationRenderer(initializeSimulation, advanceSimulation, particles) {
+export function createSimulationRenderer(simulation) {
 
     return function init(canvas, size) {
         let isRunning = true;
@@ -35,7 +35,7 @@ export function createSimulationRenderer(initializeSimulation, advanceSimulation
 
         function renderParticles() {
             const halfSize = PARTICLE_SIZE / 2;
-            for (let p of particles) {
+            for (let p of simulation.particles) {
                 context.fillStyle = `#${p.c.toString(16)}`;
                 context.fillRect(size * p.x[0] - halfSize, size - size * p.x[1] - halfSize, PARTICLE_SIZE, PARTICLE_SIZE);
             }
@@ -50,7 +50,7 @@ export function createSimulationRenderer(initializeSimulation, advanceSimulation
             const mustTime = mustRender && ENABLE_TIMING;
 
             mustTime && console.time('advance');
-            advanceSimulation(iter);
+            simulation.advance(iter);
             mustTime && console.timeEnd('advance');
 
             if (mustRender) {
@@ -61,7 +61,7 @@ export function createSimulationRenderer(initializeSimulation, advanceSimulation
         }
 
         ENABLE_TIMING && console.time('setup');
-        initializeSimulation();
+        simulation.initialize();
         ENABLE_TIMING && console.timeEnd('setup');
 
         step();

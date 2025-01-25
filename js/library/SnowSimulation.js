@@ -14,6 +14,13 @@ export class SnowSimulation extends MpmSimulation {
         this.plastic = 1;
     }
 
+
+    initialize() {
+        this.addSnowSquare([0.55,0.45], 0xED553B);
+        this.addSnowSquare([0.45,0.65], 0xF2B134);
+        this.addSnowSquare([0.55,0.85], 0x168587);
+    }
+
     // Snow-like hardening
     getMaterialProperties(particle) {
         const e = Math.exp(this.hardening * (1.0 - particle.Jp));

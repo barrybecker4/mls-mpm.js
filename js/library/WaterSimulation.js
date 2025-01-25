@@ -16,6 +16,12 @@ export class WaterSimulation extends MpmSimulation {
         this.minJ = 0.7;                // Minimum volume change factor
     }
 
+
+    initialize() {
+        this.addWaterDrop([0.40,0.75], 0.12, 0x1188FB);
+        this.addWaterDrop([0.55,0.45], 0.10, 0x6611EE);
+    }
+
     getMaterialProperties(particle) {
         const J = mat2.determinant(particle.F);
 

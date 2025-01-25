@@ -17,6 +17,21 @@ export class MpmSimulation {
         this.grid = [];
     }
 
+    initialize() {
+        throw new Error('initialize must be implemented by subclass');
+    }
+
+    advance(iter) {
+        this.advanceSimulation();
+    }
+
+    reset() {
+        this.particles = [];
+        this.grid = [];
+        this.resetGrid();
+        this.initialize();
+    }
+
     advanceSimulation() {
         this.resetGrid();
         this.particlesToGrid();
