@@ -115,17 +115,17 @@ input[type="range"]::-moz-range-thumb {
     border: none;
 }
 
-.restart-button {
-    width: 100px;
+.control-button {
+    width: 80px;
     padding: 8px;
-    margin-bottom: 15px;
-    background: #2196F3; /* #4CAF50;  green */
+    margin: 15px 5px;
+    background: #2196F3;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.restart-button:hover {
-    background: #55A9FF;   /* #45a049;  */
+.control-button:hover {
+    background: #55A9FF;
 }

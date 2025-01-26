@@ -8,6 +8,7 @@ export function createParameterControls(containerId) {
        addCollapseButton(container);
        addParameterSliders(container, content, simulation);
        addRestartButton(container, content, simulation);
+       addPauseButton(content, simulation);
     }
 
     return {
@@ -51,13 +52,33 @@ function addParameterSliders(container, content, simulation) {
     });
 }
 
+function addPauseButton(content, simulation) {
+    const pauseButton = document.createElement('button');
+    pauseButton.textContent = simulation.isPaused ? 'Resume' : 'Pause';
+    pauseButton.className = 'control-button';
+    if (simulation.isPaused) {
+        pauseButton.classList.toggle('controls-paused');
+    }
+    pauseButton.addEventListener('click', () => {
+        if (pauseButton.classList.contains('controls-paused')) {
+            simulation.resume();
+            pauseButton.textContent =  'Pause';
+        } else {
+            simulation.pause();
+            pauseButton.textContent = 'Resume';
+        }
+        pauseButton.classList.toggle('controls-paused');
+    });
+
+    content.insertBefore(pauseButton, content.firstChild);
+}
+
 function addRestartButton(container, content, simulation) {
-    // Add restart button at the top
     const restartButton = document.createElement('button');
     restartButton.textContent = 'Restart';
-    restartButton.className = 'restart-button';
+    restartButton.className = 'control-button';
     restartButton.addEventListener('click', () => {
-        simulation.reset();
+        simulation.restart();
     });
 
     content.insertBefore(restartButton, content.firstChild);

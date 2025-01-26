@@ -1,7 +1,7 @@
 const MARGIN = 48;
 const BORDER_COLOR = '#DDDDDD';
 const BG_COLOR = '#000000';
-const RENDER_EVERY = 5;
+const RENDER_EVERY = 3;
 const ENABLE_TIMING = false;
 const PARTICLE_SIZE = 4;
 const BORDER_WIDTH = 1;
@@ -17,7 +17,6 @@ export function createSimulationRenderer(simulation) {
         canvas.height = size;
 
         const context = canvas.getContext('2d', { alpha: false });
-        let iter = 0;
 
         function display() {
             renderFrame();
@@ -46,13 +45,12 @@ export function createSimulationRenderer(simulation) {
         function step() {
             if (!isRunning) return;
             requestAnimationFrame(step);
-            iter++;
 
-            const mustRender = iter % RENDER_EVERY === 0;
+            const mustRender = simulation.iter % RENDER_EVERY === 0;
             const mustTime = mustRender && ENABLE_TIMING;
 
             mustTime && console.time('advance');
-            simulation.advance(iter);
+            simulation.advance();
             mustTime && console.timeEnd('advance');
 
             if (mustRender) {

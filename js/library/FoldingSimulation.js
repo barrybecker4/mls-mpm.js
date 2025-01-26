@@ -1,11 +1,13 @@
-import { vec2, mat2, decomp, utils } from './algebra.js';
+import { vec2, mat2 } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
+import { Parameter } from './Parameter.js';
 
 
 export class FoldingSimulation extends MpmSimulation {
     constructor() {
         super();
+        this.damping = 0.9;
         // Material constants mapping
         this.materialConstants = {
             0x168587: { // white matter, soft
@@ -31,11 +33,17 @@ export class FoldingSimulation extends MpmSimulation {
         this.add_disc([0.5, 0.5], 0.1, 0.22, 0x168587);
     }
 
-    advance(iter) {
-        this.advanceSimulation();
+    getParameters() {
+        return super.getParameters().concat([
+            new Parameter('damping', 0.7, 1.0, 0.01, 'Damping'),
+        ]);
+    }
+
+    advance() {
+        super.advance();
 
         // growth: obtained by shrinking the deformation tensor
-        if (iter < 10) {
+        if (this.iter < 10) {
             for (let ind = 0; ind < this.particles.length; ind++) {
                 const particle = this.particles[ind];
                 if(particle.c === 0xED553B) {
@@ -50,8 +58,8 @@ export class FoldingSimulation extends MpmSimulation {
         // damping: obtaining by shrinking the particle's velocity
         for (let ind = 0; ind < this.particles.length; ind++) {
             const particle = this.particles[ind];
-            particle.v[0] *= 0.9;
-            particle.v[1] *= 0.9;
+            particle.v[0] *= this.damping;
+            particle.v[1] *= this.damping;
         }
     }
 

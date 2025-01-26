@@ -1,9 +1,10 @@
 import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
-import { Parameter } from '../library/Parameter.js';
+import { Parameter } from './Parameter.js';
 
 export class MpmSimulation {
 
     constructor() {
+        this.isPaused = false;
         this.particle_mass = 1.0;
         this.vol = 1.0;
         this.gravity = -200;
@@ -16,6 +17,7 @@ export class MpmSimulation {
 
         this.particles = [];
         this.grid = [];
+        this.iter = 0;
     }
 
     getParameters() {
@@ -31,13 +33,17 @@ export class MpmSimulation {
         throw new Error('initialize must be implemented by subclass');
     }
 
-    advance(iter) {
-        this.advanceSimulation();
+    advance() {
+        if (!this.isPaused) {
+            this.advanceSimulation();
+            this.iter++;
+        }
     }
 
-    reset() {
+    restart() {
         this.particles = [];
         this.grid = [];
+        this.iter = 0;
         this.resetGrid();
         this.initialize();
     }
@@ -47,6 +53,14 @@ export class MpmSimulation {
         this.particlesToGrid();
         this.updateGridVelocities(this.gravity);
         this.gridToParticles();
+    }
+
+    pause() {
+        this.isPaused = true;
+    }
+
+    resume() {
+        this.isPaused = false;
     }
 
     // return { lambda, mu ) for a particle
@@ -159,7 +173,6 @@ export class MpmSimulation {
                     console.log(`Invalid grid index: ${idx} base_coord[0]=${base_coord[0]} i=${i} base_coord[1]=${base_coord[1]} j=${j}`);
                 }
                 if (!this.grid[idx]) {
-                    //this.grid[idx] = [0, 0, 0];
                     console.log(`Invalid grid index: ${idx} grid[idx]=${this.grid[idx]} grid.length=${this.grid.length}`);
                 }
                 const weight = w[i][0] * w[j][1];
