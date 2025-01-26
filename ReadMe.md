@@ -8,9 +8,18 @@ This is a javascript version of the awesome implementation in 88 lines of c++ of
 
 The original repository is https://github.com/yuanming-hu/taichi_mpm, and the c++ code can be directly downloaded from http://bit.ly/mls-mpm88. This link contains 2 files: `taichi.h`, with linear algebra and helper functions; and `mls-mpm88.cpp` with the actual implementation of the material point method.
 
-In this javascript version, the linear algebra functions are in the `algebra.js` file, and the MPM code in the `mls-mpm.js` file (with the `88` removed).
+In this javascript version, the linear algebra functions are in the `algebra.js` file, and the MPM code in `MpmSimulation.js` file (with the `88` removed).
 
 A main tricky thing in the translation, which still is not completely solved, is that matrices in Taichi are coded transposed. In the translation, there's still a mix of functions that work transposed (svd, polar_decomp, mulMatVec), and those that don't. That makes some parts of the code a bit convoluted. Ideally, I'd like to move all the code to standard non-transposed matrix encoding.
+
+### Todo
+ - Consistent matrix encoding
+ - have pause button
+ - have user interaction with the live simulation. Perhaps a block controlled by the mouse cursor
+ - better variable names
+ - web workers
+ - more robustness/stability
+ - visualize instability in the particles
 
 ### Acknowledgements
 

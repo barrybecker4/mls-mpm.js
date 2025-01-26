@@ -1,7 +1,7 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
-import { Particle } from './particle.js';
-import { Parameter } from '../library/Parameter.js';
+import { Particle } from './Particle.js';
+import { Parameter } from './Parameter.js';
 
 
 export class SnowSimulation extends MpmSimulation {

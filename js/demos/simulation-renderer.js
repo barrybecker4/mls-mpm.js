@@ -3,7 +3,7 @@ const BORDER_COLOR = '#DDDDDD';
 const BG_COLOR = '#000000';
 const RENDER_EVERY = 5;
 const ENABLE_TIMING = false;
-const PARTICLE_SIZE = 2;
+const PARTICLE_SIZE = 4;
 const BORDER_WIDTH = 1;
 
 
@@ -28,16 +28,18 @@ export function createSimulationRenderer(simulation) {
             context.fillStyle = BG_COLOR;
             context.fillRect(0, 0, size, size);
 
-            context.lineWidth = 1;
+            context.lineWidth = BORDER_WIDTH;
             context.strokeStyle = BORDER_COLOR;
             context.strokeRect(MARGIN / 2, MARGIN / 2, size - MARGIN, size - MARGIN);
         }
 
         function renderParticles() {
             const halfSize = PARTICLE_SIZE / 2;
-            for (let p of simulation.particles) {
-                context.fillStyle = `#${p.c.toString(16)}`;
-                context.fillRect(size * p.x[0] - halfSize, size - size * p.x[1] - halfSize, PARTICLE_SIZE, PARTICLE_SIZE);
+            for (let particle of simulation.particles) {
+                context.fillStyle = `#${particle.c.toString(16)}`;
+                const x = size * particle.position[0] - halfSize;
+                const y = size - size * particle.position[1] - halfSize;
+                context.fillRect(x, y, PARTICLE_SIZE, PARTICLE_SIZE);
             }
         }
 

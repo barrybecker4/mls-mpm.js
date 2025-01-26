@@ -27,6 +27,7 @@ const DEMOS = [
     }
 ];
 
+
 // Initialize the first demo
 const firstDemo = DEMOS[0];
 firstDemo.instance = firstDemo.init(DEMOS[0].canvas, CANVAS_SIZE);

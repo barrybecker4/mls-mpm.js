@@ -1,5 +1,6 @@
 import { runTest, expect, expectArray } from './test-util.js';
 import { SnowSimulation } from '../SnowSimulation.js';
+import { Particle } from '../Particle.js';
 
 const simulation = new SnowSimulation();
 
@@ -20,7 +21,7 @@ function testParticleCreation() {
         expect(lastParticle.F).toEqual([1, 0, 0, 1]);
 
         // Check position bounds
-        const isInBounds = lastParticle.x.every((coord, i) => {
+        const isInBounds = lastParticle.position.every((coord, i) => {
             const center = 0.5;
             return Math.abs(coord - center) <= 0.08 + 1e-12;  // Add small epsilon for floating point
         });
@@ -36,30 +37,28 @@ function testGridOperations() {
 
     // Clear particles and add a single test particle
     simulation.particles.length = 0;
-    const testParticle = {
-        x: [0.5, 0.5],
-        v: [1, 0],
-        F: [1, 0, 0, 1],
-        C: [0, 0, 0, 0],
-        Jp: 1,
-        c: 1
-    };
+    const testParticle = new Particle([0.5, 0.5], 1);
+    testParticle.v = [1, 0];
+    testParticle.F = [1, 0, 0, 1];
+    testParticle.C = [0, 0, 0, 0];
+    testParticle.Jp = 1;
+
     simulation.particles.push(testParticle);
 
     total++;
     passed += runTest('Single particle advance', () => {
-        const oldPos = [...testParticle.x];
+        const oldPos = [...testParticle.position];
         simulation.advanceSimulation();
         // Particle should move in x direction due to velocity
-        expect(testParticle.x[0] > oldPos[0]).toEqual(true);
+        expect(testParticle.position[0] > oldPos[0]).toEqual(true);
         // Should also move down due to gravity
-        expect(testParticle.x[1] < oldPos[1]).toEqual(true);
+        expect(testParticle.position[1] < oldPos[1]).toEqual(true);
     });
 
     total++;
     passed += runTest('Boundary conditions', () => {
         // Move particle near bottom boundary
-        testParticle.x = [0.5, 0.01];
+        testParticle.position = [0.5, 0.01];
         testParticle.v = [0, -1];
         simulation.advanceSimulation();
         // Velocity should be constrained
@@ -74,14 +73,12 @@ function testParticleDeformation() {
     let total = 0;
 
     simulation.particles.length = 0;
-    const testParticle = {
-        x: [0.5, 0.5],
-        v: [0, 0],
-        F: [1.1, 0, 0, 0.9],  // Slightly deformed
-        C: [0, 0, 0, 0],
-        Jp: 1,
-        c: 1
-    };
+    const testParticle = new Particle([0.5, 0.5], 1);
+    testParticle.v = [0, 0];
+    testParticle.F = [1.1, 0, 0, 0.9];
+    testParticle.C = [0, 0, 0, 0];
+    testParticle.Jp = 1;
+
     simulation.particles.push(testParticle);
 
     total++;

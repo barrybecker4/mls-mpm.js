@@ -1,7 +1,6 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
-import { Parameter } from '../library/Parameter.js';
 
 
 export class FoldingSimulation extends MpmSimulation {
@@ -38,21 +37,21 @@ export class FoldingSimulation extends MpmSimulation {
         // growth: obtained by shrinking the deformation tensor
         if (iter < 10) {
             for (let ind = 0; ind < this.particles.length; ind++) {
-                const p = this.particles[ind];
-                if(p.c == 0xED553B) {
-                    p.F[0] *= 0.95;
-                    p.F[1] *= 0.95;
-                    p.F[2] *= 0.95;
-                    p.F[3] *= 0.95;
+                const particle = this.particles[ind];
+                if(particle.c === 0xED553B) {
+                    particle.F[0] *= 0.95;
+                    particle.F[1] *= 0.95;
+                    particle.F[2] *= 0.95;
+                    particle.F[3] *= 0.95;
                 }
             }
         }
 
         // damping: obtaining by shrinking the particle's velocity
         for (let ind = 0; ind < this.particles.length; ind++) {
-            const p = this.particles[ind];
-            p.v[0] *= 0.9;
-            p.v[1] *= 0.9;
+            const particle = this.particles[ind];
+            particle.v[0] *= 0.9;
+            particle.v[1] *= 0.9;
         }
     }
 
