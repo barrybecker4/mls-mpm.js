@@ -1,4 +1,4 @@
-import { runTest, expect, expectArray } from './test-util.js';
+import { runTest, expect } from './test-util.js';
 import { SnowSimulation } from '../SnowSimulation.js';
 import { Particle } from '../Particle.js';
 
@@ -16,7 +16,7 @@ function testParticleCreation() {
 
         // Test that particles are within bounds
         const lastParticle = simulation.particles[simulation.particles.length - 1];
-        expect(lastParticle.c).toEqual(1);
+        expect(lastParticle.color).toEqual(1);
         expect(lastParticle.Jp).toEqual(1);
         expect(lastParticle.F).toEqual([1, 0, 0, 1]);
 
@@ -38,7 +38,7 @@ function testGridOperations() {
     // Clear particles and add a single test particle
     simulation.particles.length = 0;
     const testParticle = new Particle([0.5, 0.5], 1);
-    testParticle.v = [1, 0];
+    testparticle.velocity = [1, 0];
     testParticle.F = [1, 0, 0, 1];
     testParticle.C = [0, 0, 0, 0];
     testParticle.Jp = 1;
@@ -59,10 +59,10 @@ function testGridOperations() {
     passed += runTest('Boundary conditions', () => {
         // Move particle near bottom boundary
         testParticle.position = [0.5, 0.01];
-        testParticle.v = [0, -1];
+        testparticle.velocity = [0, -1];
         simulation.advanceSimulation();
         // Velocity should be constrained
-        expect(testParticle.v[1] >= 0).toEqual(true);
+        expect(testparticle.velocity[1] >= 0).toEqual(true);
     });
 
     console.log(`\nGrid Operations: ${passed}/${total} tests passed\n`);
@@ -74,7 +74,7 @@ function testParticleDeformation() {
 
     simulation.particles.length = 0;
     const testParticle = new Particle([0.5, 0.5], 1);
-    testParticle.v = [0, 0];
+    testparticle.velocity = [0, 0];
     testParticle.F = [1.1, 0, 0, 0.9];
     testParticle.C = [0, 0, 0, 0];
     testParticle.Jp = 1;

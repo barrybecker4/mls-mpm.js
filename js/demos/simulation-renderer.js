@@ -35,7 +35,7 @@ export function createSimulationRenderer(simulation) {
         function renderParticles() {
             const halfSize = PARTICLE_SIZE / 2;
             for (let particle of simulation.particles) {
-                context.fillStyle = `#${particle.c.toString(16)}`;
+                context.fillStyle = `#${particle.color.toString(16)}`;
                 const x = size * particle.position[0] - halfSize;
                 const y = size - size * particle.position[1] - halfSize;
                 context.fillRect(x, y, PARTICLE_SIZE, PARTICLE_SIZE);

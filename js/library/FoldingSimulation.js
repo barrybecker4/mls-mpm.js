@@ -46,7 +46,7 @@ export class FoldingSimulation extends MpmSimulation {
         if (this.iter < 10) {
             for (let ind = 0; ind < this.particles.length; ind++) {
                 const particle = this.particles[ind];
-                if(particle.c === 0xED553B) {
+                if(particle.color === 0xED553B) {
                     particle.F[0] *= 0.95;
                     particle.F[1] *= 0.95;
                     particle.F[2] *= 0.95;
@@ -58,13 +58,13 @@ export class FoldingSimulation extends MpmSimulation {
         // damping: obtaining by shrinking the particle's velocity
         for (let ind = 0; ind < this.particles.length; ind++) {
             const particle = this.particles[ind];
-            particle.v[0] *= this.damping;
-            particle.v[1] *= this.damping;
+            particle.velocity[0] *= this.damping;
+            particle.velocity[1] *= this.damping;
         }
     }
 
     getMaterialProperties(particle) {
-        return this.materialConstants[particle.c];
+        return this.materialConstants[particle.color];
     }
 
     updateDeformationGradient(particle, F) {

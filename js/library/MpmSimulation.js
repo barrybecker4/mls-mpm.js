@@ -91,7 +91,7 @@ export class MpmSimulation {
                 [k2, 0, 0, k2]
             ).map(o => o * k1);
 
-            const affine = mat2.add(stress, particle.C.map(o => o * this.particle_mass));
+            const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.particle_mass));
             if (isNaN(affine[0]) || isNaN(affine[1])) {
                 throw new Error(`Invalid affine: ${affine} stress=${stress} p.v=${p.v} p.C=${p.C} p.F=${p.F} p.x=${p.x} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
             }
@@ -106,8 +106,8 @@ export class MpmSimulation {
             const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
             const w = utils.createKernel(fx);
 
-            particle.C = [0, 0, 0, 0];
-            particle.v = [0, 0];
+            particle.Cauchy = [0, 0, 0, 0];
+            particle.velocity = [0, 0];
 
             // Gather from grid
             for (let i = 0; i < 3; i++) {
@@ -115,28 +115,28 @@ export class MpmSimulation {
                     const dpos = vec2.sub([i, j], fx);
                     const ii = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
                     const weight = w[i][0] * w[j][1];
-                    particle.v = vec2.add(particle.v, vec2.scale(this.grid[ii], weight));
-                    if (isNaN(particle.v[0]) || isNaN(particle.v[1])) {
-                        throw new Error(`Invalid velocity: ${particle.v[0]} ${particle.v[1]} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
+                    particle.velocity = vec2.add(particle.velocity, vec2.scale(this.grid[ii], weight));
+                    if (isNaN(particle.velocity[0]) || isNaN(particle.velocity[1])) {
+                        throw new Error(`Invalid velocity: ${particle.velocity[0]} ${particle.velocity[1]} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
                     }
-                    particle.C = mat2.add(
-                        particle.C,
+                    particle.Cauchy = mat2.add(
+                        particle.Cauchy,
                         mat2.outer(vec2.scale(this.grid[ii], weight), dpos)
                             .map(o => o * 4 * this.inv_dx)
                     );
-                    if (isNaN(particle.C[0] || isNaN(particle.C[1]))) {
-                        throw new Error(`Invalid p.C: ${particle.C} dpos=${dpos} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
+                    if (isNaN(particle.Cauchy[0] || isNaN(particle.Cauchy[1]))) {
+                        throw new Error(`Invalid p.C: ${particle.Cauchy} dpos=${dpos} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
                     }
                 }
             }
 
             // Advection
-            particle.position = vec2.add(particle.position, vec2.scale(particle.v, this.dt));
+            particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.dt));
 
             // F update
-            let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.C.map(o => o * this.dt)));
+            let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.Cauchy.map(o => o * this.dt)));
             if (isNaN(F[0]) || isNaN(F[1])) {
-                throw new Error(`Invalid F: ${F} particle.F=${particle.F} particle.C=${particle.C} p.v=${p.v} particle.x=${particle.x}`);
+                throw new Error(`Invalid F: ${F} particle.F=${particle.F} particle.Cauchy=${particle.Cauchy} p.v=${p.v} particle.x=${particle.x}`);
             }
             this.updateDeformationGradient(particle, F);
         }
@@ -163,7 +163,7 @@ export class MpmSimulation {
     }
 
     transferToGrid(particle, affine, mass, base_coord, fx, w) {
-        const mv = [particle.v[0] * mass, particle.v[1] * mass, mass];
+        const mv = [particle.velocity[0] * mass, particle.velocity[1] * mass, mass];
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {

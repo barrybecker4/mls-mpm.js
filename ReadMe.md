@@ -2,7 +2,7 @@
 
 Roberto Toro, March 2019, modified by Barry Becker, 2025.
 
-<img src="https://user-images.githubusercontent.com/2310732/53946632-7d367780-40c4-11e9-8ceb-93772240351b.gif" width="400px">
+<img alt="demo" src="https://user-images.githubusercontent.com/2310732/53946632-7d367780-40c4-11e9-8ceb-93772240351b.gif" width="400px">
 
 This is a javascript version of the awesome implementation in 88 lines of c++ of the Moving Least Squares Material Point Method, by Yuanming Hu.
 
@@ -14,7 +14,6 @@ A main tricky thing in the translation, which still is not completely solved, is
 
 ### Todo
  - Consistent matrix encoding
- - have pause button
  - have user interaction with the live simulation. Perhaps a block controlled by the mouse cursor
  - better variable names
  - web workers
