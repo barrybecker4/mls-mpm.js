@@ -93,7 +93,8 @@ export class MpmSimulation {
 
             const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.particle_mass));
             if (isNaN(affine[0]) || isNaN(affine[1])) {
-                throw new Error(`Invalid affine: ${affine} stress=${stress} p.v=${p.v} p.C=${p.C} p.F=${p.F} p.x=${p.x} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
+                throw new Error(`Invalid affine: ${affine} stress=${stress} p.velocity=${p.velocity} ` +
+                                `p.Cauchy=${p.Cauchy} p.F=${p.F} p.position=${p.position} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
             }
 
             this.transferToGrid(particle, affine, this.particle_mass, base_coord, fx, w);

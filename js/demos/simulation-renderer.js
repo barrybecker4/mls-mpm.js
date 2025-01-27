@@ -1,7 +1,7 @@
 const MARGIN = 48;
 const BORDER_COLOR = '#DDDDDD';
 const BG_COLOR = '#000000';
-const RENDER_EVERY = 3;
+const RENDER_EVERY = 4;
 const ENABLE_TIMING = false;
 const PARTICLE_SIZE = 4;
 const BORDER_WIDTH = 1;
@@ -35,7 +35,7 @@ export function createSimulationRenderer(simulation) {
         function renderParticles() {
             const halfSize = PARTICLE_SIZE / 2;
             for (let particle of simulation.particles) {
-                context.fillStyle = `#${particle.color.toString(16)}`;
+                context.fillStyle = particle.stability > 0 ? `#ff0000` : `#${particle.color.toString(16)}`;
                 const x = size * particle.position[0] - halfSize;
                 const y = size - size * particle.position[1] - halfSize;
                 context.fillRect(x, y, PARTICLE_SIZE, PARTICLE_SIZE);

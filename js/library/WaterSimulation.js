@@ -64,6 +64,9 @@ export class WaterSimulation extends MpmSimulation {
         // Tighter bounds on volume change
         if (J < this.minJ || J > this.maxJ) {
             console.log("J out of bounds: ", J);
+            particle.stability = J > this.maxJ ? J - this.maxJ : this.minJ - J;
+        } else {
+            particle.stability = 0;
         }
         const newJ = Math.max(this.minJ, Math.min(J, this.maxJ));
         //const newJ = Math.max(0.96, Math.min(J, 1.04));
