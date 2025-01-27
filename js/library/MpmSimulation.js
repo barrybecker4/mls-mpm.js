@@ -1,14 +1,14 @@
 import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
-import { Parameter } from './Parameter.js';
+import { UiParameter } from './UiParameter.js';
 
 export class MpmSimulation {
 
     constructor() {
         this.isPaused = false;
+
         this.particle_mass = 1.0;
         this.vol = 1.0;
         this.gravity = -200;
-
         this.n = 90;                  // grid resolution
         this.dt = 1e-4;               // time step
         this.dx = 1.0 / this.n;       // cell width
@@ -20,12 +20,12 @@ export class MpmSimulation {
         this.iter = 0;
     }
 
-    getParameters() {
+    getUiParameters() {
         return [
-            new Parameter('particle_mass', 0.5, 2.0, 0.1, 'Particle Mass'),
-            new Parameter( 'vol', 0.5, 2.0, 0.1, 'Volume' ),
-            new Parameter( 'gravity', -400.0, 400, 20.0, 'Gravity' ),
-            new Parameter( 'dt', 0.00005, 0.0004, 0.000001, 'time step (dt)' ),
+            new UiParameter('particle_mass', 0.5, 2.0, 0.1, 'Particle Mass'),
+            new UiParameter( 'vol', 0.5, 2.0, 0.1, 'Volume' ),
+            new UiParameter( 'gravity', -400.0, 400, 20.0, 'Gravity' ),
+            new UiParameter( 'dt', 0.00005, 0.0004, 0.000001, 'time step (dt)' ),
         ];
     }
 
@@ -74,73 +74,81 @@ export class MpmSimulation {
 
     particlesToGrid() {
         for (const particle of this.particles) {
-            const base_coord = this.calcBaseCoord(particle);
-            const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
-            const w = utils.createKernel(fx);
-
-            const { mu, lambda } = this.getMaterialProperties(particle);
-
-            // Stress computation
-            const J = mat2.determinant(particle.F);
-            const { R: r } = decomp.polar(particle.F);
-            const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
-            const k2 = lambda * (J - 1) * J;
-
-            const stress = mat2.add(
-                mat2.mul(mat2.sub(mat2.transpose(particle.F), r), particle.F).map(o => o * 2 * mu),
-                [k2, 0, 0, k2]
-            ).map(o => o * k1);
-
-            const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.particle_mass));
-            if (isNaN(affine[0]) || isNaN(affine[1])) {
-                throw new Error(`Invalid affine: ${affine} stress=${stress} p.velocity=${p.velocity} ` +
-                                `p.Cauchy=${p.Cauchy} p.F=${p.F} p.position=${p.position} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
-            }
-
-            this.transferToGrid(particle, affine, this.particle_mass, base_coord, fx, w);
+            this.particleToGrid(particle);
         }
+    }
+
+    particleToGrid(particle) {
+        const base_coord = this.calcBaseCoord(particle);
+        const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
+        const w = utils.createKernel(fx);
+
+        const { mu, lambda } = this.getMaterialProperties(particle);
+
+        // Stress computation
+        const J = mat2.determinant(particle.F);
+        const { R: r } = decomp.polar(particle.F);
+        const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
+        const k2 = lambda * (J - 1) * J;
+
+        const stress = mat2.add(
+            mat2.mul(mat2.sub(mat2.transpose(particle.F), r), particle.F).map(o => o * 2 * mu),
+            [k2, 0, 0, k2]
+        ).map(o => o * k1);
+
+        const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.particle_mass));
+        if (isNaN(affine[0]) || isNaN(affine[1])) {
+            throw new Error(`Invalid affine: ${affine} stress=${stress} p.velocity=${p.velocity} ` +
+                `p.Cauchy=${p.Cauchy} p.F=${p.F} p.position=${p.position} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
+        }
+
+        this.transferToGrid(particle, affine, this.particle_mass, base_coord, fx, w);
     }
 
     gridToParticles() {
         for (const particle of this.particles) {
-            const base_coord = this.calcBaseCoord(particle);
-            const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
-            const w = utils.createKernel(fx);
+            this.gridToParticle(particle);
+        }
+    }
 
-            particle.Cauchy = [0, 0, 0, 0];
-            particle.velocity = [0, 0];
+    gridToParticle(particle) {
+        const base_coord = this.calcBaseCoord(particle);
+        const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
+        const w = utils.createKernel(fx);
 
-            // Gather from grid
-            for (let i = 0; i < 3; i++) {
-                for (let j = 0; j < 3; j++) {
-                    const dpos = vec2.sub([i, j], fx);
-                    const ii = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
-                    const weight = w[i][0] * w[j][1];
-                    particle.velocity = vec2.add(particle.velocity, vec2.scale(this.grid[ii], weight));
-                    if (isNaN(particle.velocity[0]) || isNaN(particle.velocity[1])) {
-                        throw new Error(`Invalid velocity: ${particle.velocity[0]} ${particle.velocity[1]} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
-                    }
-                    particle.Cauchy = mat2.add(
-                        particle.Cauchy,
-                        mat2.outer(vec2.scale(this.grid[ii], weight), dpos)
-                            .map(o => o * 4 * this.inv_dx)
-                    );
-                    if (isNaN(particle.Cauchy[0] || isNaN(particle.Cauchy[1]))) {
-                        throw new Error(`Invalid p.C: ${particle.Cauchy} dpos=${dpos} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
-                    }
+        particle.Cauchy = [0, 0, 0, 0];
+        particle.velocity = [0, 0];
+
+        // Gather from grid
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const dpos = vec2.sub([i, j], fx);
+                const ii = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
+                const weight = w[i][0] * w[j][1];
+                particle.velocity = vec2.add(particle.velocity, vec2.scale(this.grid[ii], weight));
+                if (isNaN(particle.velocity[0]) || isNaN(particle.velocity[1])) {
+                    throw new Error(`Invalid velocity: ${particle.velocity[0]} ${particle.velocity[1]} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
+                }
+                particle.Cauchy = mat2.add(
+                    particle.Cauchy,
+                    mat2.outer(vec2.scale(this.grid[ii], weight), dpos)
+                        .map(o => o * 4 * this.inv_dx)
+                );
+                if (isNaN(particle.Cauchy[0] || isNaN(particle.Cauchy[1]))) {
+                    throw new Error(`Invalid p.C: ${particle.Cauchy} dpos=${dpos} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
                 }
             }
-
-            // Advection
-            particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.dt));
-
-            // F update
-            let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.Cauchy.map(o => o * this.dt)));
-            if (isNaN(F[0]) || isNaN(F[1])) {
-                throw new Error(`Invalid F: ${F} particle.F=${particle.F} particle.Cauchy=${particle.Cauchy} p.v=${p.v} particle.x=${particle.x}`);
-            }
-            this.updateDeformationGradient(particle, F);
         }
+
+        // Advection
+        particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.dt));
+
+        // F update
+        let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.Cauchy.map(o => o * this.dt)));
+        if (isNaN(F[0]) || isNaN(F[1])) {
+            throw new Error(`Invalid F: ${F} particle.F=${particle.F} particle.Cauchy=${particle.Cauchy} p.v=${p.v} particle.x=${particle.x}`);
+        }
+        this.updateDeformationGradient(particle, F);
     }
 
     calcBaseCoord(particle) {

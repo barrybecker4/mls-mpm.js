@@ -26,7 +26,7 @@ function addCollapseButton(container) {
 }
 
 function addParameterSliders(container, content, simulation) {
-    const parameters = simulation.getParameters();
+    const parameters = simulation.getUiParameters();
     content.innerHTML = parameters.map(param => `
         <div class="parameter-control">
             <label>${param.label}: <span id="${param.name}-value"></span></label>

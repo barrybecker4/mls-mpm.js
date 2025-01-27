@@ -1,7 +1,7 @@
 import { vec2, mat2, decomp, utils } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './Particle.js';
-import { Parameter } from './Parameter.js';
+import { UiParameter } from './UiParameter.js';
 
 
 export class SnowSimulation extends MpmSimulation {
@@ -16,11 +16,11 @@ export class SnowSimulation extends MpmSimulation {
         this.plastic = 1;
     }
 
-    getParameters() {
-        return super.getParameters().concat([
-            new Parameter('hardening', 1.0, 20.0, 1, 'Hardening'),
-            new Parameter( 'nu', 0.1, 0.4, 0.01, 'nu' ),
-            new Parameter( 'plastic', 0.1, 10, 0.1, 'Plasticity'),
+    getUiParameters() {
+        return super.getUiParameters().concat([
+            new UiParameter('hardening', 1.0, 20.0, 1, 'Hardening'),
+            new UiParameter( 'nu', 0.1, 0.4, 0.01, 'nu' ),
+            new UiParameter( 'plastic', 0.1, 10, 0.1, 'Plasticity'),
         ]);
     }
 

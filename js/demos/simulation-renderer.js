@@ -1,8 +1,8 @@
 const MARGIN = 48;
 const BORDER_COLOR = '#DDDDDD';
 const BG_COLOR = '#000000';
-const RENDER_EVERY = 4;
-const ENABLE_TIMING = false;
+const RENDER_EVERY = 10;
+const ENABLE_TIMING = true;
 const PARTICLE_SIZE = 4;
 const BORDER_WIDTH = 1;
 
@@ -47,7 +47,7 @@ export function createSimulationRenderer(simulation) {
             requestAnimationFrame(step);
 
             const mustRender = simulation.iter % RENDER_EVERY === 0;
-            const mustTime = mustRender && ENABLE_TIMING;
+            const mustTime = mustRender && ENABLE_TIMING && !simulation.isPaused
 
             mustTime && console.time('advance');
             simulation.advance();

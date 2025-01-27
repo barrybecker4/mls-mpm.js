@@ -1,7 +1,7 @@
 import { vec2, mat2 } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
-import { Parameter } from './Parameter.js';
+import { UiParameter } from './UiParameter.js';
 
 
 export class FoldingSimulation extends MpmSimulation {
@@ -33,9 +33,9 @@ export class FoldingSimulation extends MpmSimulation {
         this.add_disc([0.5, 0.5], 0.1, 0.22, 0x168587);
     }
 
-    getParameters() {
-        return super.getParameters().concat([
-            new Parameter('damping', 0.7, 1.0, 0.01, 'Damping'),
+    getUiParameters() {
+        return super.getUiParameters().concat([
+            new UiParameter('damping', 0.7, 1.0, 0.01, 'Damping'),
         ]);
     }
 

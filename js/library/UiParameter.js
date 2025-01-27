@@ -1,4 +1,4 @@
-export class Parameter {
+export class UiParameter {
 
     constructor(name, min, max, step, label) {
         this.name = name;
