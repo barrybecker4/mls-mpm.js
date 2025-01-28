@@ -15,12 +15,14 @@ export class WaterSimulation extends MpmSimulation {
         this.gamma = 7.0;               // For nonlinear pressure response
         this.maxJ = 1.1;                // Maximum volume change factor
         this.minJ = 0.9;                // Minimum volume change factor
+        this.maxNewJ = 1.05;                // Maximum volume change factor
+        this.minNewJ = 0.95;                // Minimum volume change factor
     }
 
     getUiParameters() {
         return super.getUiParameters().concat([
             new UiParameter('density0', 500, 2000, 10, 'Density'),
-            new UiParameter( 'bulk_modulus', 50, 1000, 10, 'Bulk Modulus' ),
+            new UiParameter( 'bulk_modulus', 50, 4000, 10, 'Bulk Modulus' ),
             new UiParameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
             new UiParameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
             new UiParameter( 'maxJ', 1, 1.9, 0.05, 'Max Volume Change' ),
@@ -35,8 +37,12 @@ export class WaterSimulation extends MpmSimulation {
 
     getMaterialProperties(particle) {
         let J = mat2.determinant(particle.F);
-        if (isNaN(J) || J < 0.001) {
-            console.log(`Problem with the determinant J=${J} particle.F=${particle.F} setting it to 1.0`);
+        if (isNaN(J)) {
+            throw new Error(`J should never NaN. J=${J} particle.F=${particle.F}`);
+        }
+        if (J < this.minJ || J > this.maxJ) {
+            console.log(`Problem with the determinant J=${J} particle.F=${particle.F}. Constraining it`);
+            J = Math.max(this.minJ, Math.min(J, this.maxJ));
         }
 
         // Pressure directly proportional to volume change
@@ -57,18 +63,20 @@ export class WaterSimulation extends MpmSimulation {
     updateDeformationGradient(particle, F) {
         // For water, mainly track volume changes
         let J = mat2.determinant(F);
-        if (isNaN(J) || J < 0.001) {
-            console.log(`J should never be less than 0. J=${J} F=${F} particle.F=${particle.F}`);
+        if (isNaN(J)) {
+            throw new (`J should never NaN. J=${J} F=${F} particle.F=${particle.F}`);
         }
 
         // Tighter bounds on volume change
         if (J < this.minJ || J > this.maxJ) {
             console.log("J out of bounds: ", J);
+            //particle.stability = J > this.maxJ ? J - this.maxJ : this.minJ - J;
             particle.stability = J > this.maxJ ? J - this.maxJ : this.minJ - J;
+            J = Math.max(this.minJ, Math.min(J, this.maxJ));
         } else {
             particle.stability = 0;
         }
-        const newJ = Math.max(this.minJ, Math.min(J, this.maxJ));
+        const newJ = Math.max(this.minNewJ, Math.min(J, this.maxNewJ));
         //const newJ = Math.max(0.96, Math.min(J, 1.04));
         if (isNaN(newJ) || isNaN(J) || J === 0) throw new Error(`newJ=${newJ} J=${J} particle.F=${particle.F}`);
         const scale = Math.sqrt(newJ / J);

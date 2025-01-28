@@ -2,7 +2,7 @@ const MARGIN = 48;
 const BORDER_COLOR = '#DDDDDD';
 const BG_COLOR = '#000000';
 const RENDER_EVERY = 10;
-const ENABLE_TIMING = true;
+const ENABLE_TIMING = false;
 const PARTICLE_SIZE = 4;
 const BORDER_WIDTH = 1;
 

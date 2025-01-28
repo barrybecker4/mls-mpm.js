@@ -188,8 +188,9 @@ export class MpmSimulation {
 
     // Update grid velocities
     updateGridVelocities(gravity) {
-        for (let i = 0; i <= this.params.n; i++) {
-            for (let j = 0; j <= this.params.n; j++) {
+        const n = this.params.n
+        for (let i = 0; i <= n; i++) {
+            for (let j = 0; j <= n; j++) {
                 const idx = this.gridIndex(i, j);
                 this.updateGridVelocity(idx, i, j, gravity);
             }
