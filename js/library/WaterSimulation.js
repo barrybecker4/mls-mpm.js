@@ -1,4 +1,4 @@
-import { vec2, mat2, decomp, utils } from './algebra.js';
+import { vec2, mat2 } from './algebra.js';
 import { MpmSimulation } from './MpmSimulation.js';
 import { Particle } from './particle.js';
 import { UiParameter } from './UiParameter.js';
@@ -20,7 +20,7 @@ export class WaterSimulation extends MpmSimulation {
     getUiParameters() {
         return super.getUiParameters().concat([
             new UiParameter('density0', 500, 2000, 10, 'Density'),
-            new UiParameter( 'bulk_modulus', 50, 500, 10, 'Bulk Modulus' ),
+            new UiParameter( 'bulk_modulus', 50, 1000, 10, 'Bulk Modulus' ),
             new UiParameter( 'dynamic_viscosity', 0.01, 1, 0.01, 'Viscosity' ),
             new UiParameter( 'gamma', 1, 10, 0.1, 'Gamma' ),
             new UiParameter( 'maxJ', 1, 1.9, 0.05, 'Max Volume Change' ),
@@ -70,7 +70,7 @@ export class WaterSimulation extends MpmSimulation {
         }
         const newJ = Math.max(this.minJ, Math.min(J, this.maxJ));
         //const newJ = Math.max(0.96, Math.min(J, 1.04));
-        if (isNaN(newJ) || isNaN(J) || J == 0) throw new Error(`newJ=${newJ} J=${J} particle.F=${particle.F}`);
+        if (isNaN(newJ) || isNaN(J) || J === 0) throw new Error(`newJ=${newJ} J=${J} particle.F=${particle.F}`);
         const scale = Math.sqrt(newJ / J);
         if (isNaN(scale) || scale < 0) throw new Error(`scale=${scale} newJ=${newJ} J=${J}`);
         //if (F[0] < 0 || F[1] < 0 || F[2] < 0 || F[3] < 0) throw new Error(`F should never be negative. F=${F}`);
@@ -79,10 +79,8 @@ export class WaterSimulation extends MpmSimulation {
         particle.Jp = newJ;
     }
 
-    // You might want to add methods for creating water drops or streams
     addWaterDrop(center, radius, color) {
         const num_particles = 1000;
-        let c = 1000;
         for (let i = 0; i < num_particles; i++) {
             const theta = Math.random() * 2 * Math.PI;
             const r = Math.sqrt(Math.random()) * radius;

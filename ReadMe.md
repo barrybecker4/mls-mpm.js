@@ -15,10 +15,9 @@ A main tricky thing in the translation, which still is not completely solved, is
 ### Todo
  - Consistent matrix encoding
  - have user interaction with the live simulation. Perhaps a block controlled by the mouse cursor
- - better variable names
  - web workers
  - more robustness/stability
- - visualize instability in the particles
+ - add interactive firehose or dropper
 
 ### Acknowledgements
 

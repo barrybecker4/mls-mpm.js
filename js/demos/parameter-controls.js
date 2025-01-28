@@ -42,11 +42,11 @@ function addParameterSliders(container, content, simulation) {
     parameters.forEach(param => {
         const slider = document.getElementById(`${param.name}-slider`);
         const valueDisplay = document.getElementById(`${param.name}-value`);
-        valueDisplay.textContent = simulation[param.name];
+        valueDisplay.textContent = simulation.params[param.name];
 
         slider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
-            simulation[param.name] = value;
+            simulation.params[param.name] = value;
             valueDisplay.textContent = value;
         });
     });

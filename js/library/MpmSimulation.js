@@ -1,20 +1,12 @@
 import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
 import { UiParameter } from './UiParameter.js';
+import { MpmParameters } from './MpmParameters.js';
 
 export class MpmSimulation {
 
     constructor() {
         this.isPaused = false;
-
-        this.particle_mass = 1.0;
-        this.vol = 1.0;
-        this.gravity = -200;
-        this.n = 90;                  // grid resolution
-        this.dt = 1e-4;               // time step
-        this.dx = 1.0 / this.n;       // cell width
-        this.inv_dx = 1.0 / this.dx;  // inverse cell width
-        this.boundary = 0.05;
-
+        this.params = new MpmParameters();
         this.particles = [];
         this.grid = [];
         this.iter = 0;
@@ -51,7 +43,7 @@ export class MpmSimulation {
     advanceSimulation() {
         this.resetGrid();
         this.particlesToGrid();
-        this.updateGridVelocities(this.gravity);
+        this.updateGridVelocities(this.params.gravity);
         this.gridToParticles();
     }
 
@@ -80,7 +72,8 @@ export class MpmSimulation {
 
     particleToGrid(particle) {
         const base_coord = this.calcBaseCoord(particle);
-        const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
+        const inv_dx = this.params.inv_dx;
+        const fx = vec2.sub(vec2.scale(particle.position, inv_dx), base_coord);
         const w = utils.createKernel(fx);
 
         const { mu, lambda } = this.getMaterialProperties(particle);
@@ -88,7 +81,7 @@ export class MpmSimulation {
         // Stress computation
         const J = mat2.determinant(particle.F);
         const { R: r } = decomp.polar(particle.F);
-        const k1 = -4 * this.inv_dx * this.inv_dx * this.dt * this.vol;
+        const k1 = -4 * inv_dx * inv_dx * this.params.dt * this.params.vol;
         const k2 = lambda * (J - 1) * J;
 
         const stress = mat2.add(
@@ -96,13 +89,13 @@ export class MpmSimulation {
             [k2, 0, 0, k2]
         ).map(o => o * k1);
 
-        const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.particle_mass));
+        const affine = mat2.add(stress, particle.Cauchy.map(o => o * this.params.particle_mass));
         if (isNaN(affine[0]) || isNaN(affine[1])) {
-            throw new Error(`Invalid affine: ${affine} stress=${stress} p.velocity=${p.velocity} ` +
-                `p.Cauchy=${p.Cauchy} p.F=${p.F} p.position=${p.position} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
+            throw new Error(`Invalid affine: ${affine} stress=${stress} p.velocity=${particle.velocity} ` +
+                `p.Cauchy=${particle.Cauchy} p.F=${particle.F} p.position=${particle.position} k1=${k1} k2=${k2} lambda=${lambda} mu=${mu}`);
         }
 
-        this.transferToGrid(particle, affine, this.particle_mass, base_coord, fx, w);
+        this.transferToGrid(particle, affine, this.params.particle_mass, base_coord, fx, w);
     }
 
     gridToParticles() {
@@ -113,7 +106,7 @@ export class MpmSimulation {
 
     gridToParticle(particle) {
         const base_coord = this.calcBaseCoord(particle);
-        const fx = vec2.sub(vec2.scale(particle.position, this.inv_dx), base_coord);
+        const fx = vec2.sub(vec2.scale(particle.position, this.params.inv_dx), base_coord);
         const w = utils.createKernel(fx);
 
         particle.Cauchy = [0, 0, 0, 0];
@@ -132,7 +125,7 @@ export class MpmSimulation {
                 particle.Cauchy = mat2.add(
                     particle.Cauchy,
                     mat2.outer(vec2.scale(this.grid[ii], weight), dpos)
-                        .map(o => o * 4 * this.inv_dx)
+                        .map(o => o * 4 * this.params.inv_dx)
                 );
                 if (isNaN(particle.Cauchy[0] || isNaN(particle.Cauchy[1]))) {
                     throw new Error(`Invalid p.C: ${particle.Cauchy} dpos=${dpos} weight=${weight} ii:${ii} grid[ii]=${this.grid[ii]}`);
@@ -141,10 +134,10 @@ export class MpmSimulation {
         }
 
         // Advection
-        particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.dt));
+        particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.params.dt));
 
         // F update
-        let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.Cauchy.map(o => o * this.dt)));
+        let F = mat2.mul(particle.F, mat2.add([1, 0, 0, 1], particle.Cauchy.map(o => o * this.params.dt)));
         if (isNaN(F[0]) || isNaN(F[1])) {
             throw new Error(`Invalid F: ${F} particle.F=${particle.F} particle.Cauchy=${particle.Cauchy} p.v=${p.v} particle.x=${particle.x}`);
         }
@@ -152,23 +145,22 @@ export class MpmSimulation {
     }
 
     calcBaseCoord(particle) {
-        const base_coord = vec2.sub(vec2.scale(particle.position, this.inv_dx), [0.5, 0.5]).map(o => parseInt(o));
+        const base_coord = vec2.sub(vec2.scale(particle.position, this.params.inv_dx), [0.5, 0.5]).map(o => parseInt(o));
         if (base_coord[0] < 0 || isNaN(base_coord[0])) {
-            console.log(`Invalid base_coord: ${base_coord[0]} ${base_coord[1]} p.x=${p.x} inv_dx=${this.inv_dx}`);
+            console.log(`Invalid base_coord: ${base_coord[0]} ${base_coord[1]} particle.pos=${particle.position} inv_dx=${this.params.inv_dx}`);
         }
         return base_coord;
     }
 
-    // Utility methods shared by all simulations
     resetGrid() {
-        const maxIndex = (this.n + 1) * (this.n + 1);
+        const maxIndex = (this.params.n + 1) * (this.params.n + 1);
         for (let i = 0; i < maxIndex; i++) {
             this.grid[i] = [0, 0, 0];
         }
     }
 
     gridIndex(i, j) {
-        return i + (this.n + 1) * j;
+        return i + (this.params.n + 1) * j;
     }
 
     transferToGrid(particle, affine, mass, base_coord, fx, w) {
@@ -176,7 +168,7 @@ export class MpmSimulation {
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                const dpos = [(i - fx[0]) * this.dx, (j - fx[1]) * this.dx];
+                const dpos = [(i - fx[0]) * this.params.dx, (j - fx[1]) * this.params.dx];
                 const idx = this.gridIndex(base_coord[0] + i, base_coord[1] + j);
                 if (idx < 0 || idx >= this.grid.length || isNaN(idx)) {
                     console.log(`Invalid grid index: ${idx} base_coord[0]=${base_coord[0]} i=${i} base_coord[1]=${base_coord[1]} j=${j}`);
@@ -187,7 +179,7 @@ export class MpmSimulation {
                 const weight = w[i][0] * w[j][1];
                 const change = vec3.scale(vec3.add(mv, [...mat2.mulVec(affine, dpos), 0]), weight);
                 if (isNaN(change[0]) || isNaN(change[1])) {
-                    throw new Error(`Invalid change: ${change} p.v=${p.v} mv=${mv} dpos=${dpos} affine=${affine} weight=${weight} idx=${idx}`);
+                    throw new Error(`Invalid change: ${change} p.v=${particle.v} mv=${mv} dpos=${dpos} affine=${affine} weight=${weight} idx=${idx}`);
                 }
                 this.grid[idx] = vec3.add(this.grid[idx], change);
             }
@@ -196,8 +188,8 @@ export class MpmSimulation {
 
     // Update grid velocities
     updateGridVelocities(gravity) {
-        for (let i = 0; i <= this.n; i++) {
-            for (let j = 0; j <= this.n; j++) {
+        for (let i = 0; i <= this.params.n; i++) {
+            for (let j = 0; j <= this.params.n; j++) {
                 const idx = this.gridIndex(i, j);
                 this.updateGridVelocity(idx, i, j, gravity);
             }
@@ -209,16 +201,17 @@ export class MpmSimulation {
             // Normalize by mass
             this.grid[idx] = this.grid[idx].map(o => o / this.grid[idx][2]);
             // Add gravity
-            this.grid[idx] = vec3.add(this.grid[idx], [0, gravity * this.dt, 0]);
+            this.grid[idx] = vec3.add(this.grid[idx], [0, gravity * this.params.dt, 0]);
 
-            const x = i / this.n;
-            const y = j / this.n;
+            const x = i / this.params.n;
+            const y = j / this.params.n;
 
             // Apply boundary conditions
-            if (x < this.boundary || x > 1.0 - this.boundary || y > 1.0 - this.boundary) {
+            const boundary = this.params.boundary;
+            if (x < boundary || x > 1.0 - boundary || y > 1.0 - boundary) {
                 this.grid[idx] = [0, 0, 0];
             }
-            if (y < this.boundary) {
+            if (y < boundary) {
                 this.grid[idx][1] = Math.max(0.0, this.grid[idx][1]);
             }
         }
