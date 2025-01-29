@@ -94,6 +94,7 @@ export class WaterSimulation extends MpmSimulation {
             const r = Math.sqrt(Math.random()) * radius;
             const offset = [r * Math.cos(theta), r * Math.sin(theta)];
             const position = vec2.add(center, offset);
+            if (position[0] <= 0 || position[0] >= 1 || position[1] <= 0 || position[1] >= 0.9) continue;
             this.particles.push(new Particle(position, color));
         }
     }
