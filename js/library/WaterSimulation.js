@@ -31,8 +31,8 @@ export class WaterSimulation extends MpmSimulation {
     }
 
     initialize() {
-        this.addWaterDrop([0.40,0.75], 0.12, 0x51B8FF);
-        this.addWaterDrop([0.55,0.45], 0.10, 0xA681FE);
+        this.addObject([0.40,0.75], 0.11, 0x51B8FF);
+        this.addObject([0.55,0.45], 0.09, 0xA681FE);
     }
 
     getMaterialProperties(particle) {
@@ -87,7 +87,7 @@ export class WaterSimulation extends MpmSimulation {
         particle.Jp = newJ;
     }
 
-    addWaterDrop(center, radius, color) {
+    addObject(center, radius, color) {
         const num_particles = 1000;
         for (let i = 0; i < num_particles; i++) {
             const theta = Math.random() * 2 * Math.PI;

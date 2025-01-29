@@ -25,9 +25,9 @@ export class SnowSimulation extends MpmSimulation {
     }
 
     initialize() {
-        this.addSnowSquare([0.55,0.45], 0xED553B);
-        this.addSnowSquare([0.45,0.65], 0xF2B134);
-        this.addSnowSquare([0.55,0.85], 0x168587);
+        this.addObject([0.55,0.45], 0.12, 0xED553B);
+        this.addObject([0.45,0.65], 0.14, 0xF2B134);
+        this.addObject([0.55,0.85], 0.16, 0x168587);
     }
 
     // Snow-like hardening
@@ -51,9 +51,10 @@ export class SnowSimulation extends MpmSimulation {
         particle.F = F;
     }
 
-    addSnowSquare(center, color) {
+    addObject(center, size, color) {
+        const halfSize = size / 2;
         for (let i = 0; i < 1000; i++) {
-            const offset = [(Math.random() * 2 - 1) * 0.08, (Math.random() * 2 - 1) * 0.08];
+            const offset = [(Math.random() * size - halfSize), (Math.random() * size - halfSize)];
             const position = vec2.add(center, offset);
             this.particles.push(new Particle(position, color));
         }

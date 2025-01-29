@@ -55,6 +55,14 @@ export class MpmSimulation {
         this.isPaused = false;
     }
 
+    addObject(center, color) {
+        throw new Error('addObject must be implemented by subclass');
+    }
+
+    applyForce(center, forceVector) {
+        console.log('applying force to center:', center, 'force:', forceVector);
+    }
+
     // return { lambda, mu ) for a particle
     getMaterialProperties(particle) {
         throw new Error('getMaterialProperties must be implemented by subclass');
