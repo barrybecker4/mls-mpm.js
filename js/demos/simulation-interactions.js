@@ -1,3 +1,5 @@
+const EFFECT_RADIUS = 0.07;
+
 export function createSimulationInteractions(canvas, MARGIN, simulation, onDragChange) {
     let isDragging = false;
     let lastDragPos = null;
@@ -61,7 +63,7 @@ export function createSimulationInteractions(canvas, MARGIN, simulation, onDragC
             -dragVector.y / size // Flip Y because simulation uses bottom-left origin
         ];
 
-        simulation.applyForce(simPos, simVector);
+        simulation.applyForce(simPos, simVector, EFFECT_RADIUS);
 
         lastDragPos = currentPos;
         onDragChange({ isDragging, lastDragPos });

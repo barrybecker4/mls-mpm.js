@@ -17,6 +17,7 @@ export class MpmSimulation {
             new UiParameter('particle_mass', 0.5, 2.0, 0.1, 'Particle Mass'),
             new UiParameter( 'vol', 0.5, 2.0, 0.1, 'Volume' ),
             new UiParameter( 'gravity', -400.0, 400, 20.0, 'Gravity' ),
+            new UiParameter( 'forceScale', 50, 300, 10, 'Force Scale' ),
             new UiParameter( 'dt', 0.00005, 0.0004, 0.000001, 'time step (dt)' ),
         ];
     }
@@ -59,8 +60,13 @@ export class MpmSimulation {
         throw new Error('addObject must be implemented by subclass');
     }
 
-    applyForce(center, forceVector) {
-        console.log('applying force to center:', center, 'force:', forceVector);
+    applyForce(center, forceVector, radius) {
+        for (const particle of this.particles) {
+            const dist = vec2.distance(center, particle.position);
+            if (dist < radius) {
+                particle.externalForce = forceVector;
+            }
+        }
     }
 
     // return { lambda, mu ) for a particle
@@ -141,6 +147,13 @@ export class MpmSimulation {
             }
         }
 
+        // change velocity be external force, if any
+        if (particle.externalForce) {
+            //console.log('old velocity:', particle.velocity, 'external force:', particle.externalForce);
+            particle.velocity = vec2.add(particle.velocity, vec2.scale(particle.externalForce, this.params.forceScale));
+            //console.log('new velocity:', particle.velocity);
+            particle.externalForce = null;
+        }
         // Advection
         particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.params.dt));
 

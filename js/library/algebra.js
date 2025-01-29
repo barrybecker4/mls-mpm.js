@@ -7,7 +7,8 @@ export const vec2 = {
     sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
     scale: (a, t) => [a[0] * t, a[1] * t],
     hadamard: (a, b) => [a[0] * b[0], a[1] * b[1]],
-    dot: (a, b) => a[0] * b[0] + a[1] * b[1]
+    dot: (a, b) => a[0] * b[0] + a[1] * b[1],
+    distance: (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 };
 
 /** 3D Vector operations */

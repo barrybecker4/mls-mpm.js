@@ -10,5 +10,6 @@ export class MpmParameters {
         this.dx = 1.0 / this.n;       // cell width
         this.inv_dx = 1.0 / this.dx;  // inverse cell width
         this.boundary = 0.05;
+        this.forceScale = 100;
     }
 }
