@@ -79,7 +79,7 @@ export class MpmSimulation {
     }
 
     incrementFaucetFlow() {
-        const num_particles = 3;
+        const num_particles = 2;
         for (let i = 0; i < num_particles; i++) {
             const position = [this.faucetPosition[0] + 0.2 * Math.random() * this.faucetSize, this.faucetPosition[1] + Math.random() * this.faucetSize];
             console.log("adding faucet particle" + position);

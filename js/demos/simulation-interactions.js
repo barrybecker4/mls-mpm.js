@@ -10,7 +10,7 @@ export function createSimulationInteractions(canvas, MARGIN, simulation, onDragC
 
 
     function addObject(coords) {
-        const [simX, simY] = this.convertToSimCoords(coords);
+        const [simX, simY] = convertToSimCoords(coords);
 
         // Check if click is within simulation bounds
         const margin = MARGIN / size;
