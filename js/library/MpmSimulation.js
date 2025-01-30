@@ -1,6 +1,7 @@
 import { vec2, vec3, mat2, utils, decomp } from './algebra.js';
 import { UiParameter } from './UiParameter.js';
 import { MpmParameters } from './MpmParameters.js';
+import { Particle } from './Particle.js';
 
 export class MpmSimulation {
 
@@ -10,6 +11,10 @@ export class MpmSimulation {
         this.particles = [];
         this.grid = [];
         this.iter = 0;
+        this.faucetRunning = false;
+        this.faucetPosition = [0, 0];
+        this.faucetVelocity = [0, 0];
+        this.faucetSize = 0.0;
     }
 
     getUiParameters() {
@@ -58,6 +63,30 @@ export class MpmSimulation {
 
     addObject(center, color) {
         throw new Error('addObject must be implemented by subclass');
+    }
+
+    startFaucet(faucetPos, velocity, size) {
+        this.faucetPosition = faucetPos;
+        this.faucetVelocity = velocity;
+        this.faucetSize = size;
+        this.faucetRunning = true;
+        console.log("faucetRunning = " + this.faucetRunning + " faucetPos = " + faucetPos + " velocity = " + velocity + " size = " + size);
+
+    }
+
+    stopFaucet() {
+        this.faucetRunning = false;
+    }
+
+    incrementFaucetFlow() {
+        const num_particles = 3;
+        for (let i = 0; i < num_particles; i++) {
+            const position = [this.faucetPosition[0] + 0.2 * Math.random() * this.faucetSize, this.faucetPosition[1] + Math.random() * this.faucetSize];
+            console.log("adding faucet particle" + position);
+            const particle = new Particle(position, 0x44ff55);
+            particle.velocity = this.faucetVelocity;
+            this.particles.push(particle);
+        }
     }
 
     applyForce(center, forceVector, radius) {
@@ -116,6 +145,9 @@ export class MpmSimulation {
         for (const particle of this.particles) {
             this.gridToParticle(particle);
         }
+        if (this.faucetRunning) {
+            this.incrementFaucetFlow();
+        }
     }
 
     gridToParticle(particle) {
@@ -154,6 +186,7 @@ export class MpmSimulation {
             //console.log('new velocity:', particle.velocity);
             particle.externalForce = null;
         }
+
         // Advection
         particle.position = vec2.add(particle.position, vec2.scale(particle.velocity, this.params.dt));
 

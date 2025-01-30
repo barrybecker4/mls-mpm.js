@@ -1,15 +1,16 @@
 const EFFECT_RADIUS = 0.07;
+const FAUCET_VELOCITY = 10.0;
 
 export function createSimulationInteractions(canvas, MARGIN, simulation, onDragChange) {
     let isDragging = false;
     let lastDragPos = null;
     let size = canvas.width;
+    let faucetPos = [ 0.5, 0.5 ];
+    let faucetRunning = false;
 
-    function addObject(canvasX, canvasY) {
-        // Convert canvas coordinates to simulation space (0 to 1)
-        const simX = canvasX / size;
-        // Flip Y coordinate since simulation uses bottom-left origin
-        const simY = 1 - (canvasY / size);
+
+    function addObject(coords) {
+        const [simX, simY] = this.convertToSimCoords(coords);
 
         // Check if click is within simulation bounds
         const margin = MARGIN / size;
@@ -21,43 +22,41 @@ export function createSimulationInteractions(canvas, MARGIN, simulation, onDragC
         simulation.addObject([simX, simY], 0.12, 0x33FFa2);
     }
 
-    function convertToSimCoords(canvasX, canvasY) {
-        return [canvasX / size, 1 - (canvasY / size)];
+    function convertToSimCoords(canvasCoords) {
+        return [canvasCoords[0] / size, 1 - (canvasCoords[1] / size)];
     }
 
-    function handleClick(event) {
+    function handleDblClick(event) {
         event.preventDefault();
+        addObject(getCoords(event));
+    }
+
+    function getCoords(event) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        addObject(x, y);
+        return [ x, y ];
     }
 
     function handleDragStart(event) {
         isDragging = true;
-        const rect = canvas.getBoundingClientRect();
-        lastDragPos = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
+
+        lastDragPos = getCoords(event);
+        faucetPos = convertToSimCoords(lastDragPos);
         onDragChange({ isDragging, lastDragPos });
     }
 
     function handleDragMove(event) {
         if (!isDragging || !lastDragPos) return;
 
-        const rect = canvas.getBoundingClientRect();
-        const currentPos = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
+        const currentPos = getCoords(event);
 
         const dragVector = {
-            x: currentPos.x - lastDragPos.x,
-            y: currentPos.y - lastDragPos.y
+            x: currentPos[0] - lastDragPos[0],
+            y: currentPos[1] - lastDragPos[1]
         };
 
-        const simPos = convertToSimCoords(currentPos.x, currentPos.y);
+        const simPos = convertToSimCoords(currentPos);
         const simVector = [
             dragVector.x / size,
             -dragVector.y / size // Flip Y because simulation uses bottom-left origin
@@ -75,19 +74,31 @@ export function createSimulationInteractions(canvas, MARGIN, simulation, onDragC
         onDragChange({ isDragging, lastDragPos });
     }
 
-    canvas.addEventListener('dblclick', handleClick);
+    function handleKeyDown(event) {
+        if (event.key === 'f' || event.key === 'F') {
+            faucetRunning = !faucetRunning;
+            if (faucetRunning) simulation.startFaucet(faucetPos, [FAUCET_VELOCITY, 0], EFFECT_RADIUS / 2);
+            else simulation.stopFaucet();
+        }
+    }
+
+    canvas.addEventListener('dblclick', handleDblClick);
     canvas.addEventListener('mousedown', handleDragStart);
     canvas.addEventListener('mousemove', handleDragMove);
     canvas.addEventListener('mouseup', handleDragEnd);
     canvas.addEventListener('mouseleave', handleDragEnd);
+    canvas.setAttribute('tabindex', '0');
+    canvas.addEventListener('keydown', handleKeyDown);
+    canvas.focus();
 
     return {
         cleanup: () => {
-            canvas.removeEventListener('dblclick', handleClick);
+            canvas.removeEventListener('dblclick', handleDblClick);
             canvas.removeEventListener('mousedown', handleDragStart);
             canvas.removeEventListener('mousemove', handleDragMove);
             canvas.removeEventListener('mouseup', handleDragEnd);
             canvas.removeEventListener('mouseleave', handleDragEnd);
+            canvas.removeEventListener('keydown', handleKeyDown)
         }
     };
 }
